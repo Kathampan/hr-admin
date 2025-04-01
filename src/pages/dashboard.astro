@@ -1,0 +1,83 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Grid from "../components/Grid";
+---
+
+<Layout title="Dashboard">
+  <script is:inline>
+    if (!localStorage.getItem("authToken")) {
+      window.location.href = "/login";
+    }
+  </script>
+<header class="custom-header">
+  <div class="container-fluid mt-3">
+    <div class="row">
+      <div class="col-6">
+        <h3>HR Connect</h3>
+      </div>
+      <div class="col-6">
+        <a href="/logout" class="btn btn-danger float-end">Logout</a>
+      </div>
+    </div>
+  </div>
+</header>
+  <div class="container  mt-4 shadow-5 rounded-3 p-3 custom-header">
+    <div class="col-lg-12">
+      <Grid client:only />
+    </div>
+  </div>
+
+  <!--Add project Modal -->
+  <div
+    class="modal fade mt-5"
+    id="addProject"
+    tabindex="-1"
+    aria-labelledby="addProjectLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content modal-custom">
+        <div class="modal-header modal-custom-head">
+          <h5 class="modal-title" id="addProjectLabel">Add Project</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="projectInput" class="form-label "
+              >Project Name</label
+            >
+            <input
+              type="text"
+              class="form-control"
+              id="projectInput"
+              placeholder="Project Name"
+            />
+          </div>
+          <div class="mb-3">
+            <label for="projectDesc" class="form-label"
+              >Project Description</label
+            >
+            <input
+              type="text"
+              class="form-control"
+              id="projectDesc"
+              placeholder="Project Description"
+            />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-cancel"
+            data-bs-dismiss="modal">Close</button
+          >
+          <button type="button" class="btn btn-black">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>

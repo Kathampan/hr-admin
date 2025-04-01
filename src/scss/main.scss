@@ -1,0 +1,48 @@
+@charset "UTF-8";
+
+//
+// The main scss file.
+//
+// The main file (usually labelled main.scss) should be the only Sass file
+// from the whole code base not to begin with an underscore.
+// This file should not contain anything but @import and comments.
+//
+
+// 1. Configuration and helpers
+@import "abstracts/functions/is-color";
+@import "abstracts/functions/strip-unit";
+@import "abstracts/functions/rem-conversion";
+@import "abstracts/variables";
+@import "abstracts/mixins/block";
+@import "abstracts/mixins/center";
+@import "abstracts/mixins/overlay";
+@import "abstracts/mixins/unselectable";
+@import "abstracts/utilities/utilities";
+
+// Mix colors from variables before bootstrap
+$theme-colors: map-merge($theme-colors, $custom-colors);
+
+// 2. Vendors
+@import "bootstrap/scss/bootstrap.scss";
+@import 'animate.css/animate.min.css';
+
+// 3. Base stuff
+@import "base/base";
+@import "base/fonts";
+@import "base/typography";
+@import "base/helpers";
+
+// 4. Layout-related sections
+@import "layout/header";
+@import "layout/footer";
+
+// 5. Components
+
+
+
+// 6. Page-specific styles
+@import 'pages/login';
+@import 'pages/style';
+
+
+
