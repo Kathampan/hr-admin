@@ -141,7 +141,7 @@ const Login = () => {
                   {/* <p className="text-muted">Please enter your credentials</p> */}
                 </div>
                 <div className="mb-3">
-                  <label htmlFor="email" className="form-label">Email</label>
+                  <label htmlFor="email" className="form-label">Email <span className="text-danger">*</span></label>
                   <input
                     type="email"
                     className={`form-control bg-white ${errors.email ? 'is-invalid' : ''}`}
@@ -159,7 +159,7 @@ const Login = () => {
                 </div>
 
                 <div className="mb-4">
-                  <label htmlFor="password" className="form-label">Password</label>
+                  <label htmlFor="password" className="form-label">Password <span className="text-danger">*</span></label>
                   <input
                     type="password"
                     className={`form-control bg-white ${errors.password ? 'is-invalid' : ''}`}

@@ -201,12 +201,12 @@ const DataTable = ({ data = [], columns = [] }) => {
             </div>
             <div className="modal-body">
               <div className="mb-3">
-                <label className="form-label">Project Name</label>
+                <label className="form-label">Project Name <span className="text-danger">*</span></label>
                 <input type="text" className="form-control" value={newProject.project} onChange={e => setNewProject({ ...newProject, project: e.target.value })} />
                 {errors.project && <small className="text-danger">{errors.project}</small>}
               </div>
               <div className="mb-3">
-                <label className="form-label">Project Info</label>
+                <label className="form-label">Project Info <span className="text-danger">*</span></label>
                 <input type="text" className="form-control" value={newProject.projectInfo} onChange={e => setNewProject({ ...newProject, projectInfo: e.target.value })} />
                 {errors.projectInfo && <small className="text-danger">{errors.projectInfo}</small>}
               </div>

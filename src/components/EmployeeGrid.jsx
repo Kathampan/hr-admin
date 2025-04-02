@@ -6,8 +6,8 @@ import { FaExternalLinkAlt } from 'react-icons/fa';
 const EmployeeGrid = () => {
   const [employees, setEmployees] = useState([
     { id: 1, firstName: 'Ask', lastName: 'ST', designation: 'Developer', status: 'Active', tracking: 'Tracking' },
-    { id: 2, firstName: 'Test', lastName: '', designation: 'Manager', status: 'Active', tracking: 'Tracking' },
-    { id: 3, firstName: 'Test', lastName: '', designation: 'Designer', status: 'Active', tracking: 'Tracking' }
+    { id: 2, firstName: 'Test', lastName: 'KJ', designation: 'Manager', status: 'Active', tracking: 'Tracking' },
+    { id: 3, firstName: 'Test', lastName: 'PP', designation: 'Designer', status: 'Active', tracking: 'Tracking' }
   ]);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -60,7 +60,6 @@ const EmployeeGrid = () => {
     { key: 'designation', label: 'Designation', sortable: true },
     { key: 'action', label: 'Action', sortable: false }
   ];
-
   const requestSort = (key) => {
     if (!columns.find(col => col.key === key)?.sortable) return;
 
@@ -134,7 +133,7 @@ const EmployeeGrid = () => {
     if (!newEmployee.address1.trim()) newErrors.address1 = 'Address 1 is required';
     if (!newEmployee.dob.trim()) newErrors.dob = 'Date of birth is required';
     if (!newEmployee.state.trim()) newErrors.state = 'State is required';
-    if (!newEmployee.fathersName.trim()) newErrors.fathersName = "Father's name is required";
+
 
     // Additional validations
     if (newEmployee.officialEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmployee.officialEmail)) {
@@ -185,11 +184,14 @@ const EmployeeGrid = () => {
       firstName: newEmployee.firstName,
       lastName: newEmployee.lastName,
       designation: newEmployee.designation,
-      status: 'Active',
-      tracking: 'Tracking'
+      status: 'Active',  // Default status
+      tracking: 'Tracking'  // Default tracking
     };
 
+    // Add the new employee to the list
     setEmployees([...employees, employeeToAdd]);
+
+    // Reset the form
     setNewEmployee({
       title: '',
       firstName: '',
@@ -226,6 +228,8 @@ const EmployeeGrid = () => {
       phone2: '',
       uan: ''
     });
+
+    // Close the modal and show success message
     setShowAddModal(false);
     showToastMessage('Employee added successfully');
   };
@@ -252,7 +256,7 @@ const EmployeeGrid = () => {
             <div className="d-flex align-items-center gap-3">
               <h5 className="mb-0">EMPLOYEE</h5>
               <button
-                className="btn btn-primary"
+                className="btn btn-black"
                 onClick={() => setShowAddModal(true)}
               >
                 Add
@@ -373,7 +377,7 @@ const EmployeeGrid = () => {
       {/* Add Employee Modal */}
       {showAddModal && (
         <div className="modal fade show" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+          <div className="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">Employee Information</h5>
@@ -685,7 +689,7 @@ const EmployeeGrid = () => {
                   <div className="mb-4">
                     <h6 className="border-bottom pb-2">Present Address</h6>
                     <div className="row g-3">
-                      <div className="col-12">
+                      <div className="col-6">
                         <label className="form-label">Address 1 <span className="text-danger">*</span></label>
                         <input
                           type="text"
@@ -696,7 +700,7 @@ const EmployeeGrid = () => {
                         />
                         {errors.address1 && <div className="invalid-feedback">{errors.address1}</div>}
                       </div>
-                      <div className="col-12">
+                      <div className="col-6">
                         <label className="form-label">Address 2</label>
                         <input
                           type="text"
@@ -706,7 +710,7 @@ const EmployeeGrid = () => {
                           onChange={handleInputChange}
                         />
                       </div>
-                      <div className="col-12">
+                      <div className="col-6">
                         <label className="form-label">Address 3</label>
                         <input
                           type="text"
@@ -716,7 +720,7 @@ const EmployeeGrid = () => {
                           onChange={handleInputChange}
                         />
                       </div>
-                      <div className="col-md-4">
+                      <div className="col-md-6">
                         <label className="form-label">City</label>
                         <input
                           type="text"
@@ -776,12 +780,12 @@ const EmployeeGrid = () => {
                   <div className="modal-footer">
                     <button
                       type="button"
-                      className="btn btn-secondary"
+                      className="btn btn-cancel"
                       onClick={() => setShowAddModal(false)}
                     >
                       Discard
                     </button>
-                    <button type="submit" className="btn btn-primary">Save</button>
+                    <button type="submit" className="btn btn-black">Save</button>
                   </div>
                 </form>
               </div>
