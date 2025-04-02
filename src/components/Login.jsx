@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import '../scss/components/style.scss'
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -112,7 +113,7 @@ const Login = () => {
 
   return (
     <div className="login-container d-flex justify-content-center align-items-center min-vh-100">
-      <div className="login-card card shadow-lg">
+      <div className="login-card card shadow-5">
         <div className="card-body p-5">
 
 
