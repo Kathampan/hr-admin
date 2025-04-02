@@ -7,7 +7,16 @@ const EmployeeGrid = () => {
   const [employees, setEmployees] = useState([
     { id: 1, firstName: 'Ask', lastName: 'ST', designation: 'Developer', status: 'Active', tracking: 'Tracking' },
     { id: 2, firstName: 'Test', lastName: 'KJ', designation: 'Manager', status: 'Active', tracking: 'Tracking' },
-    { id: 3, firstName: 'Test', lastName: 'PP', designation: 'Designer', status: 'Active', tracking: 'Tracking' }
+    { id: 3, firstName: 'Test', lastName: 'PP', designation: 'Designer', status: 'Inactive', tracking: 'Tracking' },
+    { id: 4, firstName: 'Ask', lastName: 'ST', designation: 'Developer', status: 'Active', tracking: 'Tracking' },
+    { id: 5, firstName: 'Test', lastName: 'KJ', designation: 'Manager', status: 'Inactive', tracking: 'Tracking' },
+    { id: 6, firstName: 'Test', lastName: 'PP', designation: 'Designer', status: 'Active', tracking: 'Tracking' },
+    { id: 7, firstName: 'Ask', lastName: 'ST', designation: 'Developer', status: 'Active', tracking: 'Tracking' },
+    { id: 8, firstName: 'Test', lastName: 'KJ', designation: 'Manager', status: 'Active', tracking: 'Tracking' },
+    { id: 9, firstName: 'Test', lastName: 'PP', designation: 'Designer', status: 'Active', tracking: 'Tracking' },
+    { id: 10, firstName: 'Ask', lastName: 'ST', designation: 'Developer', status: 'Active', tracking: 'Tracking' },
+    { id: 11, firstName: 'Test', lastName: 'KJ', designation: 'Manager', status: 'Active', tracking: 'Tracking' },
+    { id: 12, firstName: 'Test', lastName: 'PP', designation: 'Designer', status: 'Active', tracking: 'Tracking' }
   ]);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -60,6 +69,7 @@ const EmployeeGrid = () => {
     { key: 'designation', label: 'Designation', sortable: true },
     { key: 'action', label: 'Action', sortable: false }
   ];
+
   const requestSort = (key) => {
     if (!columns.find(col => col.key === key)?.sortable) return;
 
@@ -123,7 +133,6 @@ const EmployeeGrid = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    // Starred fields validation
     if (!newEmployee.firstName.trim()) newErrors.firstName = 'First name is required';
     if (!newEmployee.lastName.trim()) newErrors.lastName = 'Last name is required';
     if (!newEmployee.employeeId.trim()) newErrors.employeeId = 'Employee ID is required';
@@ -133,9 +142,8 @@ const EmployeeGrid = () => {
     if (!newEmployee.address1.trim()) newErrors.address1 = 'Address 1 is required';
     if (!newEmployee.dob.trim()) newErrors.dob = 'Date of birth is required';
     if (!newEmployee.state.trim()) newErrors.state = 'State is required';
+    if (!newEmployee.fathersName.trim()) newErrors.fathersName = "Father's name is required";
 
-
-    // Additional validations
     if (newEmployee.officialEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmployee.officialEmail)) {
       newErrors.officialEmail = 'Invalid email format';
     }
@@ -184,14 +192,11 @@ const EmployeeGrid = () => {
       firstName: newEmployee.firstName,
       lastName: newEmployee.lastName,
       designation: newEmployee.designation,
-      status: 'Active',  // Default status
-      tracking: 'Tracking'  // Default tracking
+      status: 'Active',
+      tracking: 'Tracking'
     };
 
-    // Add the new employee to the list
     setEmployees([...employees, employeeToAdd]);
-
-    // Reset the form
     setNewEmployee({
       title: '',
       firstName: '',
@@ -228,8 +233,6 @@ const EmployeeGrid = () => {
       phone2: '',
       uan: ''
     });
-
-    // Close the modal and show success message
     setShowAddModal(false);
     showToastMessage('Employee added successfully');
   };
@@ -249,132 +252,135 @@ const EmployeeGrid = () => {
   }, [showToast]);
 
   return (
-    <div className="container mt-4">
-      <div className="table-container">
-        <div className='d-flex align-items-center gap-5 gap-md-0 mb-3'>
-          <div className="col-lg-8">
-            <div className="d-flex align-items-center gap-3">
-              <h5 className="mb-0">EMPLOYEE</h5>
-              <button
-                className="btn btn-black"
-                onClick={() => setShowAddModal(true)}
-              >
-                Add
-              </button>
-            </div>
-          </div>
-          <div className='col-lg-4'>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Search..."
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-            />
+    <div className="container mt-4" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 100px)' }}>
+      <div className='d-flex align-items-center gap-5 gap-md-0 mb-3'>
+        <div className="col-lg-8">
+          <div className="d-flex align-items-center gap-3">
+            <h5 className="mb-0">EMPLOYEE</h5>
+            <button
+              className="btn btn-black"
+              onClick={() => setShowAddModal(true)}
+            >
+              Add
+            </button>
           </div>
         </div>
+        <div className='col-lg-4'>
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Search..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+          />
+        </div>
+      </div>
 
-        <div className="table-responsive">
-          <table className="table table-bordered bg-white">
-            <thead>
-              <tr>
-                {columns.map(column => (
-                  <th
-                    key={column.key}
-                    className={column.sortable ? 'sortable-header' : ''}
-                    onClick={() => requestSort(column.key)}
-                    style={{ cursor: column.sortable ? 'pointer' : 'default' }}
+      <div className="table-responsive" style={{ flex: 1, overflowY: 'auto' }}>
+        <table className="table table-bordered bg-white">
+          <thead>
+            <tr>
+              {columns.map(column => (
+                <th
+                  key={column.key}
+                  className={column.sortable ? 'sortable-header' : ''}
+                  onClick={() => requestSort(column.key)}
+                  style={{ cursor: column.sortable ? 'pointer' : 'default' }}
+                >
+                  <div className="d-flex align-items-center justify-content-between">
+                    {column.label}
+                    {column.sortable && getSortIcon(column.key)}
+                  </div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {currentPageData.map(employee => (
+              <tr key={employee.id}>
+                <td>
+                  <a
+                    href={`/employee/${employee.id}`}
+                    className="text-decoration-none"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleViewDetails(employee.id);
+                    }}
                   >
-                    <div className="d-flex align-items-center justify-content-between">
-                      {column.label}
-                      {column.sortable && getSortIcon(column.key)}
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {currentPageData.map(employee => (
-                <tr key={employee.id}>
-                  <td>
+                    {employee.firstName}
+                  </a>
+                </td>
+                <td>{employee.lastName}</td>
+                <td>{employee.designation}</td>
+                <td>
+                  <div className="d-flex gap-2">
+                    <button
+                      className={`btn btn-sm employee-stat ${employee.status === 'Active' ? 'btn-warning' : 'btn-success'}`}
+                      onClick={() => handleToggleStatus(employee.id)}
+                    >
+                      {employee.status === 'Active' ? 'Deactivate' : 'Activate'}
+                    </button>
                     <a
                       href={`/employee/${employee.id}`}
-                      className="text-decoration-none"
+                      className="btn btn-sm btn-link text-decoration-none"
                       onClick={(e) => {
                         e.preventDefault();
                         handleViewDetails(employee.id);
                       }}
                     >
-                      {employee.firstName}
+                      <FaExternalLinkAlt /> View
                     </a>
-                  </td>
-                  <td>{employee.lastName}</td>
-                  <td>{employee.designation}</td>
-                  <td>
-                    <div className="d-flex gap-2">
-                      <button
-                        className={`btn btn-sm ${employee.status === 'Active' ? 'btn-warning' : 'btn-success'}`}
-                        onClick={() => handleToggleStatus(employee.id)}
-                      >
-                        {employee.status === 'Active' ? 'Deactivate' : 'Activate'}
-                      </button>
-                      <a
-                        href={`/employee/${employee.id}`}
-                        className="btn btn-sm btn-link text-decoration-none"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleViewDetails(employee.id);
-                        }}
-                      >
-                        <FaExternalLinkAlt /> View
-                      </a>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {filteredData.length > rowsPerPage && (
-          <div className="pagination-container mt-3">
-            <nav>
-              <ul className="pagination justify-content-center mb-0">
-                <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                  <button
-                    className="page-link"
-                    onClick={() => setCurrentPage(currentPage - 1)}
-                    disabled={currentPage === 1}
-                  >
-                    Prev
-                  </button>
-                </li>
-                {[...Array(totalPages)].map((_, index) => (
-                  <li key={index} className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}>
-                    <button
-                      className="page-link"
-                      onClick={() => setCurrentPage(index + 1)}
-                    >
-                      {index + 1}
-                    </button>
-                  </li>
-                ))}
-                <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                  <button
-                    className="page-link"
-                    onClick={() => setCurrentPage(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                  </button>
-                </li>
-              </ul>
-            </nav>
-          </div>
-        )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
-      {/* Add Employee Modal */}
+      {filteredData.length > rowsPerPage && (
+        <div className="pagination-container mt-3" style={{ 
+          position: 'sticky',
+          bottom: 0,
+          backgroundColor: 'white',
+          padding: '10px 0',
+          borderTop: '1px solid #dee2e6'
+        }}>
+          <nav>
+            <ul className="pagination justify-content-center mb-0">
+              <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                <button
+                  className="page-link"
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  Prev
+                </button>
+              </li>
+              {[...Array(totalPages)].map((_, index) => (
+                <li key={index} className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}>
+                  <button
+                    className="page-link"
+                    onClick={() => setCurrentPage(index + 1)}
+                  >
+                    {index + 1}
+                  </button>
+                </li>
+              ))}
+              <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                <button
+                  className="page-link"
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      )}
+
       {showAddModal && (
         <div className="modal fade show" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <div className="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
@@ -387,7 +393,7 @@ const EmployeeGrid = () => {
                   onClick={() => setShowAddModal(false)}
                 ></button>
               </div>
-              <div className="modal-body">
+              <div className="modal-body p-4">
                 <form onSubmit={handleSubmit}>
                   <div className="mb-4">
                     <h6 className="border-bottom pb-2">Basic Information</h6>
@@ -689,7 +695,7 @@ const EmployeeGrid = () => {
                   <div className="mb-4">
                     <h6 className="border-bottom pb-2">Present Address</h6>
                     <div className="row g-3">
-                      <div className="col-6">
+                      <div className="col-md-4">
                         <label className="form-label">Address 1 <span className="text-danger">*</span></label>
                         <input
                           type="text"
@@ -700,7 +706,7 @@ const EmployeeGrid = () => {
                         />
                         {errors.address1 && <div className="invalid-feedback">{errors.address1}</div>}
                       </div>
-                      <div className="col-6">
+                      <div className="col-md-4">
                         <label className="form-label">Address 2</label>
                         <input
                           type="text"
@@ -710,7 +716,7 @@ const EmployeeGrid = () => {
                           onChange={handleInputChange}
                         />
                       </div>
-                      <div className="col-6">
+                      <div className="col-md-4">
                         <label className="form-label">Address 3</label>
                         <input
                           type="text"
@@ -720,7 +726,7 @@ const EmployeeGrid = () => {
                           onChange={handleInputChange}
                         />
                       </div>
-                      <div className="col-md-6">
+                      <div className="col-md-4">
                         <label className="form-label">City</label>
                         <input
                           type="text"
@@ -820,38 +826,6 @@ const EmployeeGrid = () => {
           </div>
         </div>
       )}
-
-      <style jsx>{`
-        .table-container {
-          display: flex;
-          flex-direction: column;
-          min-height: 0;
-        }
-        .table-responsive {
-          flex: 1;
-          overflow-y: auto;
-        }
-        .pagination-container {
-          flex-shrink: 0;
-        }
-        th {
-          background-color: #f8f9fa;
-          font-weight: 600;
-          padding: 12px 16px;
-          vertical-align: middle;
-          position: sticky;
-          top: 0;
-        }
-        .sortable-header:hover {
-          background-color: #e9ecef;
-        }
-        .table {
-          margin-bottom: 0;
-        }
-        .modal {
-          background-color: rgba(0,0,0,0.5);
-        }
-      `}</style>
     </div>
   );
 };
