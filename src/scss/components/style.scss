@@ -67,7 +67,8 @@
   /* Keep all your existing styles */
   .login-container {
     //background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
+    height: calc(100vh - 80px);
+   // min-height: 100vh;
   }
   
   .modal-custom{
@@ -112,4 +113,8 @@
   }
   .card-body{
     background: #fff !important;
+  }
+
+  .custom-table{
+    height:calc(100vh - 150px)
   }

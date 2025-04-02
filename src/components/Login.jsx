@@ -112,7 +112,7 @@ const Login = () => {
   };
 
   return (
-    <div className="login-container d-flex justify-content-center align-items-center min-vh-100">
+    <div className="login-container d-flex justify-content-center align-items-center ">
       <div className="login-card card shadow-5">
         <div className="card-body p-5">
 
@@ -191,14 +191,14 @@ const Login = () => {
                   </button>
                 </div>
 
-                <div className="text-center">
+                {/* <div className="text-center">
                   <a href="#forgot-password" className="text-decoration-none">Forgot password?</a>
                 </div>
                 <div className="text-center mt-4">
                   <p className="text-muted">
                     Don't have an account? <a href="#signup" className="text-decoration-none fw-bold">Sign up</a>
                   </p>
-                </div>
+                </div> */}
               </form>
             </>
           )}

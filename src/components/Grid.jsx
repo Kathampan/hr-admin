@@ -4,7 +4,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 const DataTable = ({ data = [], columns = [] }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage] = useState(5);
+  const [rowsPerPage] = useState(10); // Set to 10 rows per page
   const [projects, setProjects] = useState(data);
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
@@ -29,7 +29,7 @@ const DataTable = ({ data = [], columns = [] }) => {
         id: projects.length + 1, 
         ...newProject, 
         isActive: true,
-        date: new Date().toISOString().split('T')[0] // Add current date automatically
+        date: new Date().toISOString().split('T')[0]
       }
     ];
     setProjects(updatedProjects);
@@ -38,7 +38,6 @@ const DataTable = ({ data = [], columns = [] }) => {
     setCurrentPage(Math.ceil(updatedProjects.length / rowsPerPage));
     showToastMessage(`"${newProject.project}" added successfully!`);
     
-    // Close the modal
     const modal = bootstrap.Modal.getInstance(modalRef.current);
     modal.hide();
   };
@@ -118,7 +117,7 @@ const DataTable = ({ data = [], columns = [] }) => {
 
   return (
     <div className="container mt-4">
-      <div className="table-responsive">
+      <div className="table-container">
         <div className='d-flex align-items-center gap-5 gap-md-0'>
           <div className="col-lg-8 mb-3">
             <div className="d-flex align-items-center gap-3">
@@ -130,60 +129,65 @@ const DataTable = ({ data = [], columns = [] }) => {
             <input type="text" className="form-control mb-3" placeholder="Search..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
           </div>
         </div>
-        <table className="table table-bordered bg-white">
-          <thead>
-            <tr>
-              {columns.map(column => (
-                <th 
-                  key={column.key}
-                  className={column.sortable ? 'sortable-header' : ''}
-                  onClick={() => requestSort(column.key)}
-                  style={{ cursor: column.sortable ? 'pointer' : 'default' }}
-                >
-                  <div className="d-flex align-items-center justify-content-between">
-                    {column.label}
-                    {column.sortable && getSortIcon(column.key)}
-                  </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {currentPageData.map(row => (
-              <tr key={row.id}>
+
+        <div className="table-responsive">
+          <table className="table table-bordered bg-white">
+            <thead>
+              <tr>
                 {columns.map(column => (
-                  <td key={column.key}>
-                    {column.key === 'action' ? (
-                      <>
-                        <button className={`btn btn-${row.isActive ? 'success' : 'warning'} btn-sm me-2`} onClick={() => handleToggle(row.id)}>
-                          {row.isActive ? 'Disable' : 'Enable'}
-                        </button>
-                        <button className="btn btn-secondary btn-sm" onClick={() => handleArchive(row.id)}>Archive</button>
-                      </>
-                    ) : column.key === 'date' ? new Date(row[column.key]).toLocaleDateString() : row[column.key]}
-                  </td>
+                  <th 
+                    key={column.key}
+                    className={column.sortable ? 'sortable-header' : ''}
+                    onClick={() => requestSort(column.key)}
+                    style={{ cursor: column.sortable ? 'pointer' : 'default' }}
+                  >
+                    <div className="d-flex align-items-center justify-content-between">
+                      {column.label}
+                      {column.sortable && getSortIcon(column.key)}
+                    </div>
+                  </th>
                 ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {currentPageData.map(row => (
+                <tr key={row.id}>
+                  {columns.map(column => (
+                    <td key={column.key}>
+                      {column.key === 'action' ? (
+                        <>
+                          <button className={`btn btn-${row.isActive ? 'success' : 'warning'} btn-sm me-2`} onClick={() => handleToggle(row.id)}>
+                            {row.isActive ? 'Disable' : 'Enable'}
+                          </button>
+                          <button className="btn btn-secondary btn-sm" onClick={() => handleArchive(row.id)}>Archive</button>
+                        </>
+                      ) : column.key === 'date' ? new Date(row[column.key]).toLocaleDateString() : row[column.key]}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         {filteredData.length > rowsPerPage && (
-          <nav>
-            <ul className="pagination justify-content-center">
-              <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1}>Prev</button>
-              </li>
-              {[...Array(totalPages)].map((_, index) => (
-                <li key={index} className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}>
-                  <button className="page-link" onClick={() => setCurrentPage(index + 1)}>{index + 1}</button>
+          <div className="pagination-container mt-3">
+            <nav>
+              <ul className="pagination justify-content-center mb-0">
+                <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                  <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1}>Prev</button>
                 </li>
-              ))}
-              <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages}>Next</button>
-              </li>
-            </ul>
-          </nav>
+                {[...Array(totalPages)].map((_, index) => (
+                  <li key={index} className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}>
+                    <button className="page-link" onClick={() => setCurrentPage(index + 1)}>{index + 1}</button>
+                  </li>
+                ))}
+                <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                  <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages}>Next</button>
+                </li>
+              </ul>
+            </nav>
+          </div>
         )}
       </div>
 
@@ -244,14 +248,32 @@ const DataTable = ({ data = [], columns = [] }) => {
       </div>
 
       <style jsx>{`
+        .table-container {
+          display: flex;
+          flex-direction: column;
+          height: calc(100vh - 200px);
+        }
+        .table-responsive {
+          flex: 1;
+          overflow-y: auto;
+          margin-bottom: 20px;
+        }
+        .pagination-container {
+          flex-shrink: 0;
+        }
         th {
           background-color: #f8f9fa;
           font-weight: 600;
           padding: 12px 16px;
           vertical-align: middle;
+          position: sticky;
+          top: 0;
         }
         .sortable-header:hover {
           background-color: #e9ecef;
+        }
+        .table {
+          margin-bottom: 0;
         }
       `}</style>
     </div>
