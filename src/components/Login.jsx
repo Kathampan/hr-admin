@@ -144,7 +144,7 @@ const Login = () => {
                   <label htmlFor="email" className="form-label">Email</label>
                   <input
                     type="email"
-                    className={`form-control ${errors.email ? 'is-invalid' : ''}`}
+                    className={`form-control bg-white ${errors.email ? 'is-invalid' : ''}`}
                     id="email"
                     name="email"
                     value={formData.email}
@@ -162,7 +162,7 @@ const Login = () => {
                   <label htmlFor="password" className="form-label">Password</label>
                   <input
                     type="password"
-                    className={`form-control ${errors.password ? 'is-invalid' : ''}`}
+                    className={`form-control bg-white ${errors.password ? 'is-invalid' : ''}`}
                     id="password"
                     name="password"
                     value={formData.password}
