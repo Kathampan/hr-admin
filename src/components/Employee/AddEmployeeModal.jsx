@@ -1,30 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { FaExternalLinkAlt } from 'react-icons/fa';
 
-const EmployeeGrid = () => {
-  const [employees, setEmployees] = useState([
-    { id: 1, firstName: 'Ask', lastName: 'ST', designation: 'Developer', status: 'Active', tracking: 'Tracking' },
-    { id: 2, firstName: 'Test', lastName: 'KJ', designation: 'Manager', status: 'Active', tracking: 'Tracking' },
-    { id: 3, firstName: 'Test', lastName: 'PP', designation: 'Designer', status: 'Inactive', tracking: 'Tracking' },
-    { id: 4, firstName: 'Ask', lastName: 'ST', designation: 'Developer', status: 'Active', tracking: 'Tracking' },
-    { id: 5, firstName: 'Test', lastName: 'KJ', designation: 'Manager', status: 'Inactive', tracking: 'Tracking' },
-    { id: 6, firstName: 'Test', lastName: 'PP', designation: 'Designer', status: 'Active', tracking: 'Tracking' },
-    { id: 7, firstName: 'Ask', lastName: 'ST', designation: 'Developer', status: 'Active', tracking: 'Tracking' },
-    { id: 8, firstName: 'Test', lastName: 'KJ', designation: 'Manager', status: 'Active', tracking: 'Tracking' },
-    { id: 9, firstName: 'Test', lastName: 'PP', designation: 'Designer', status: 'Active', tracking: 'Tracking' },
-    { id: 10, firstName: 'Ask', lastName: 'ST', designation: 'Developer', status: 'Active', tracking: 'Tracking' },
-    { id: 11, firstName: 'Test', lastName: 'KJ', designation: 'Manager', status: 'Active', tracking: 'Tracking' },
-    { id: 12, firstName: 'Test', lastName: 'PP', designation: 'Designer', status: 'Active', tracking: 'Tracking' }
-  ]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage] = useState(10);
-  const [toastMessage, setToastMessage] = useState('');
-  const [showToast, setShowToast] = useState(false);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+const AddEmployeeModal = ({ showAddModal, setShowAddModal, setEmployees, employees, showToastMessage }) => {
   const [newEmployee, setNewEmployee] = useState({
     title: '',
     firstName: '',
@@ -62,66 +40,6 @@ const EmployeeGrid = () => {
     uan: ''
   });
   const [errors, setErrors] = useState({});
-
-  const columns = [
-    { key: 'firstName', label: 'First name', sortable: true },
-    { key: 'lastName', label: 'Last name', sortable: true },
-    { key: 'designation', label: 'Designation', sortable: true },
-    { key: 'action', label: 'Action', sortable: false }
-  ];
-
-  const requestSort = (key) => {
-    if (!columns.find(col => col.key === key)?.sortable) return;
-
-    let direction = 'asc';
-    if (sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
-    }
-    setSortConfig({ key, direction });
-  };
-
-  const sortedData = React.useMemo(() => {
-    let sortableData = [...employees];
-    if (sortConfig.key) {
-      sortableData.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
-          return sortConfig.direction === 'asc' ? -1 : 1;
-        }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
-          return sortConfig.direction === 'asc' ? 1 : -1;
-        }
-        return 0;
-      });
-    }
-    return sortableData;
-  }, [employees, sortConfig]);
-
-  const filteredData = sortedData.filter(employee =>
-    columns.some(column =>
-      employee[column.key]?.toString().toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
-
-  const totalPages = Math.ceil(filteredData.length / rowsPerPage);
-  const currentPageData = filteredData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
-
-  const handleToggleStatus = (id) => {
-    setEmployees(employees.map(employee =>
-      employee.id === id
-        ? { ...employee, status: employee.status === 'Active' ? 'Inactive' : 'Active' }
-        : employee
-    ));
-    showToastMessage('Status updated successfully');
-  };
-
-  const handleViewDetails = (id) => {
-    window.location.href = `/employee/${id}`;
-  };
-
-  const showToastMessage = (message) => {
-    setToastMessage(message);
-    setShowToast(true);
-  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -237,150 +155,8 @@ const EmployeeGrid = () => {
     showToastMessage('Employee added successfully');
   };
 
-  const getSortIcon = (key) => {
-    if (sortConfig.key !== key) return <span className="ms-2">⇅</span>;
-    return sortConfig.direction === 'asc' ? <span className="ms-2">↑</span> : <span className="ms-2">↓</span>;
-  };
-
-  useEffect(() => {
-    if (showToast) {
-      const timer = setTimeout(() => {
-        setShowToast(false);
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [showToast]);
-
   return (
-    <div className="container mt-4" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 100px)' }}>
-      <div className='d-flex align-items-center gap-5 gap-md-0 mb-3'>
-        <div className="col-lg-8">
-          <div className="d-flex align-items-center gap-3">
-            <h5 className="mb-0">EMPLOYEE</h5>
-            <button
-              className="btn btn-black"
-              onClick={() => setShowAddModal(true)}
-            >
-              Add
-            </button>
-          </div>
-        </div>
-        <div className='col-lg-4'>
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Search..."
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-          />
-        </div>
-      </div>
-
-      <div className="table-responsive" style={{ flex: 1, overflowY: 'auto' }}>
-        <table className="table table-bordered bg-white">
-          <thead>
-            <tr>
-              {columns.map(column => (
-                <th
-                  key={column.key}
-                  className={column.sortable ? 'sortable-header' : ''}
-                  onClick={() => requestSort(column.key)}
-                  style={{ cursor: column.sortable ? 'pointer' : 'default' }}
-                >
-                  <div className="d-flex align-items-center justify-content-between">
-                    {column.label}
-                    {column.sortable && getSortIcon(column.key)}
-                  </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {currentPageData.map(employee => (
-              <tr key={employee.id}>
-                <td>
-                  <a
-                    href={`/employee/${employee.id}`}
-                    className="text-decoration-none"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleViewDetails(employee.id);
-                    }}
-                  >
-                    {employee.firstName}
-                  </a>
-                </td>
-                <td>{employee.lastName}</td>
-                <td>{employee.designation}</td>
-                <td>
-                  <div className="d-flex gap-2">
-                    <button
-                      className={`btn btn-sm employee-stat ${employee.status === 'Active' ? 'btn-warning' : 'btn-success'}`}
-                      onClick={() => handleToggleStatus(employee.id)}
-                    >
-                      {employee.status === 'Active' ? 'Deactivate' : 'Activate'}
-                    </button>
-                    <a
-                      href={`/employee/${employee.id}`}
-                      className="btn btn-sm btn-link text-decoration-none"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleViewDetails(employee.id);
-                      }}
-                    >
-                      <FaExternalLinkAlt /> View
-                    </a>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {filteredData.length > rowsPerPage && (
-        <div className="pagination-container mt-3" style={{
-          position: 'sticky',
-          bottom: 0,
-          backgroundColor: 'white',
-          padding: '10px 0',
-          borderTop: '1px solid #dee2e6'
-        }}>
-          <nav>
-            <ul className="pagination justify-content-center mb-0">
-              <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                <button
-                  className="page-link"
-                  onClick={() => setCurrentPage(currentPage - 1)}
-                  disabled={currentPage === 1}
-                >
-                  Prev
-                </button>
-              </li>
-              {[...Array(totalPages)].map((_, index) => (
-                <li key={index} className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}>
-                  <button
-                    className="page-link"
-                    onClick={() => setCurrentPage(index + 1)}
-                  >
-                    {index + 1}
-                  </button>
-                </li>
-              ))}
-              <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                <button
-                  className="page-link"
-                  onClick={() => setCurrentPage(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                >
-                  Next
-                </button>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      )}
-
+    <>
       {showAddModal && (
         <div className="modal fade show" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <div className="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
@@ -736,17 +512,6 @@ const EmployeeGrid = () => {
                           onChange={handleInputChange}
                         />
                       </div>
-                      {/* <div className="col-md-4">
-                        <label className="form-label">State <span className="text-danger">*</span></label>
-                        <input
-                          type="text"
-                          className={`form-control ${errors.state ? 'is-invalid' : ''}`}
-                          name="state"
-                          value={newEmployee.state}
-                          onChange={handleInputChange}
-                        />
-                        {errors.state && <div className="invalid-feedback">{errors.state}</div>}
-                      </div> */}
                       <div className="col-md-4">
                         <label className="form-label">State <span className="text-danger">*</span></label>
                         <select
@@ -756,7 +521,6 @@ const EmployeeGrid = () => {
                           onChange={handleInputChange}
                         >
                           <option value="">Select State</option>
-                          {/* States */}
                           <option value="Andhra Pradesh">Andhra Pradesh</option>
                           <option value="Arunachal Pradesh">Arunachal Pradesh</option>
                           <option value="Assam">Assam</option>
@@ -785,7 +549,6 @@ const EmployeeGrid = () => {
                           <option value="Uttar Pradesh">Uttar Pradesh</option>
                           <option value="Uttarakhand">Uttarakhand</option>
                           <option value="West Bengal">West Bengal</option>
-                          {/* Union Territories */}
                           <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
                           <option value="Chandigarh">Chandigarh</option>
                           <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
@@ -849,35 +612,8 @@ const EmployeeGrid = () => {
           </div>
         </div>
       )}
-
-      {showToast && (
-        <div
-          className="toast align-items-center text-white bg-success border-0 show"
-          role="alert"
-          aria-live="assertive"
-          aria-atomic="true"
-          style={{
-            position: 'fixed',
-            top: '20px',
-            right: '20px',
-            zIndex: 9999,
-            transition: 'all 0.5s ease-in-out'
-          }}
-        >
-          <div className="d-flex">
-            <div className="toast-body">
-              {toastMessage}
-            </div>
-            <button
-              type="button"
-              className="btn-close btn-close-white me-2 m-auto"
-              onClick={() => setShowToast(false)}
-            ></button>
-          </div>
-        </div>
-      )}
-    </div>
+    </>
   );
 };
 
-export default EmployeeGrid;
+export default AddEmployeeModal;
