@@ -3,7 +3,7 @@ import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 
-const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessage }) => {
+const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessage, onEditEmployee, onAddEmployee, onViewDetails }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage] = useState(10);
@@ -60,24 +60,20 @@ const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessa
     showToastMessage('Status updated successfully');
   };
 
-  const handleViewDetails = (id) => {
-    window.location.href = `/employee/${id}`;
-  };
-
   const getSortIcon = (key) => {
     if (sortConfig.key !== key) return <span className="ms-2">⇅</span>;
     return sortConfig.direction === 'asc' ? <span className="ms-2">↑</span> : <span className="ms-2">↓</span>;
   };
 
   return (
-    <div className="container mt-4" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 100px)' }}>
+    <div className="container mt-4" style={{ display: 'flex', flexDirection: 'column', }}>
       <div className='d-flex align-items-center gap-5 gap-md-0 mb-3'>
         <div className="col-lg-8">
           <div className="d-flex align-items-center gap-3">
             <h5 className="mb-0">EMPLOYEE</h5>
             <button
               className="btn btn-black"
-              onClick={() => setShowAddModal(true)}
+              onClick={onAddEmployee}
             >
               Add
             </button>
@@ -118,11 +114,11 @@ const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessa
               <tr key={employee.id}>
                 <td>
                   <a
-                    href={`/employee/${employee.id}`}
+                    href="#"
                     className="text-decoration-none"
                     onClick={(e) => {
                       e.preventDefault();
-                      handleViewDetails(employee.id);
+                      onEditEmployee(employee);
                     }}
                   >
                     {employee.firstName}
@@ -138,16 +134,12 @@ const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessa
                     >
                       {employee.status === 'Active' ? 'Deactivate' : 'Activate'}
                     </button>
-                    <a
-                      href={`/employee/${employee.id}`}
+                    <button
                       className="btn btn-sm btn-link text-decoration-none"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleViewDetails(employee.id);
-                      }}
+                      onClick={() => onViewDetails(employee)} // Use the new handler
                     >
-                      <FaExternalLinkAlt /> View
-                    </a>
+                      <FaExternalLinkAlt /> View Projects
+                    </button>
                   </div>
                 </td>
               </tr>

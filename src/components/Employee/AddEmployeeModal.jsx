@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-const AddEmployeeModal = ({ showAddModal, setShowAddModal, setEmployees, employees, showToastMessage }) => {
-  const [newEmployee, setNewEmployee] = useState({
+const AddEmployeeModal = ({ showAddModal, setShowAddModal, setEmployees, employees, showToastMessage, editingEmployee = null }) => {
+  const initialEmployeeState = {
     title: '',
     firstName: '',
     lastName: '',
@@ -37,9 +37,27 @@ const AddEmployeeModal = ({ showAddModal, setShowAddModal, setEmployees, employe
     officialMobile: '',
     phone1: '',
     phone2: '',
-    uan: ''
-  });
+    uan: '',
+    status: 'Active',
+    tracking: 'Tracking'
+  };
+
+  const [newEmployee, setNewEmployee] = useState(initialEmployeeState);
   const [errors, setErrors] = useState({});
+  const [mode, setMode] = useState('add');
+
+  // Reset form when showAddModal or editingEmployee changes
+  useEffect(() => {
+    if (showAddModal) {
+      if (editingEmployee) {
+        setMode('edit');
+        setNewEmployee({ ...initialEmployeeState, ...editingEmployee }); // Pre-fill with all fields from editingEmployee
+      } else {
+        setMode('add');
+        setNewEmployee(initialEmployeeState); // Reset to initial state
+      }
+    }
+  }, [showAddModal, editingEmployee]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -104,55 +122,30 @@ const AddEmployeeModal = ({ showAddModal, setShowAddModal, setEmployees, employe
     e.preventDefault();
     if (!validateForm()) return;
 
-    const newId = employees.length > 0 ? Math.max(...employees.map(e => e.id)) + 1 : 1;
-    const employeeToAdd = {
-      id: newId,
-      firstName: newEmployee.firstName,
-      lastName: newEmployee.lastName,
-      designation: newEmployee.designation,
-      status: 'Active',
-      tracking: 'Tracking'
-    };
+    if (mode === 'add') {
+      const newId = employees.length > 0 ? Math.max(...employees.map(e => e.id)) + 1 : 1;
+      const employeeToAdd = {
+        ...newEmployee,
+        id: newId,
+        status: 'Active',
+        tracking: 'Tracking'
+      };
+      setEmployees([...employees, employeeToAdd]);
+      showToastMessage('Employee added successfully');
+    } else if (mode === 'edit') {
+      const updatedEmployee = {
+        ...newEmployee,
+        status: editingEmployee.status, // Preserve the original status
+        tracking: editingEmployee.tracking // Preserve the original tracking
+      };
+      setEmployees(employees.map(emp => emp.id === updatedEmployee.id ? updatedEmployee : emp));
+      showToastMessage('Employee updated successfully');
+    }
 
-    setEmployees([...employees, employeeToAdd]);
-    setNewEmployee({
-      title: '',
-      firstName: '',
-      lastName: '',
-      employeeId: '',
-      aadhaarCard: '',
-      gender: 'Male',
-      mobile: '',
-      personalEmail: '',
-      officialEmail: '',
-      pan: '',
-      drivingLicense: '',
-      address1: '',
-      address2: '',
-      address3: '',
-      designation: '',
-      middleName: '',
-      fathersName: '',
-      esiNo: '',
-      ediDispensary: '',
-      dob: '',
-      placeOfBirth: '',
-      age: '',
-      maritalStatus: 'Single',
-      children: '',
-      city: '',
-      state: '',
-      pinCode: '',
-      nationality: 'Indian',
-      citizenship: 'Indian',
-      spouseName: '',
-      officialMobile: '',
-      phone1: '',
-      phone2: '',
-      uan: ''
-    });
+    // Reset the form state after submission
+    setNewEmployee(initialEmployeeState);
+    setMode('add');
     setShowAddModal(false);
-    showToastMessage('Employee added successfully');
   };
 
   return (
@@ -162,11 +155,15 @@ const AddEmployeeModal = ({ showAddModal, setShowAddModal, setEmployees, employe
           <div className="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">Employee Information</h5>
+                <h5 className="modal-title">{mode === 'add' ? 'Employee Information' : 'Edit Employee'}</h5>
                 <button
                   type="button"
                   className="btn-close"
-                  onClick={() => setShowAddModal(false)}
+                  onClick={() => {
+                    setShowAddModal(false);
+                    setMode('add');
+                    setNewEmployee(initialEmployeeState); // Reset form on close
+                  }}
                 ></button>
               </div>
               <div className="modal-body p-4">
@@ -600,11 +597,15 @@ const AddEmployeeModal = ({ showAddModal, setShowAddModal, setEmployees, employe
                     <button
                       type="button"
                       className="btn btn-cancel"
-                      onClick={() => setShowAddModal(false)}
+                      onClick={() => {
+                        setShowAddModal(false);
+                        setMode('add');
+                        setNewEmployee(initialEmployeeState);
+                      }}
                     >
                       Discard
                     </button>
-                    <button type="submit" className="btn btn-black">Save</button>
+                    <button type="submit" className="btn btn-black">{mode === 'add' ? 'Save' : 'Update'}</button>
                   </div>
                 </form>
               </div>

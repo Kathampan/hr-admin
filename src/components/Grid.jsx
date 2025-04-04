@@ -32,8 +32,11 @@ const DataTable = ({ data = [], columns = [] }) => {
         date: new Date().toISOString().split('T')[0]
       }
     ];
+    
     setProjects(updatedProjects);
     setNewProject({ project: '', projectInfo: '' });
+    console.log("New Project Details:", newProject);
+console.log("Updated Projects List:", updatedProjects);
     setErrors({});
     setCurrentPage(Math.ceil(updatedProjects.length / rowsPerPage));
     showToastMessage(`"${newProject.project}" added successfully!`);
