@@ -66,7 +66,7 @@ const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessa
   };
 
   return (
-    <div className="container mt-4" style={{ display: 'flex', flexDirection: 'column', }}>
+    <div className="container mt-4 employee-grid" style={{ display: 'flex', flexDirection: 'column', }}>
       <div className='d-flex align-items-center gap-5 gap-md-0 mb-3'>
         <div className="col-lg-8">
           <div className="d-flex align-items-center gap-3">
