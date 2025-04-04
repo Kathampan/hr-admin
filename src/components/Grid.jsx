@@ -121,14 +121,14 @@ console.log("Updated Projects List:", updatedProjects);
   return (
     <div className="container mt-4">
       <div className="table-container">
-        <div className='d-flex align-items-center gap-5 gap-md-0'>
-          <div className="col-lg-8 mb-3">
+        <div className='d-flex flex-column  flex-md-row align-items-center '>
+          <div className="col-12 col-md-8 mb-3">
             <div className="d-flex align-items-center gap-3">
               <h5 className="mb-0"> <a href='/dashboard'><img src="/left-arrow-black.svg"/></a> Projects</h5>
               <button className="btn btn-black" data-bs-toggle="modal" data-bs-target="#addProject">Add</button>
             </div>
           </div>
-          <div className='col-lg-4'>
+          <div className='col-12 col-md-4'>
             <input type="text" className="form-control mb-3" placeholder="Search..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
           </div>
         </div>

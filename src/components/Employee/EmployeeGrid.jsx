@@ -67,8 +67,8 @@ const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessa
 
   return (
     <div className="container mt-4 employee-grid" style={{ display: 'flex', flexDirection: 'column', }}>
-      <div className='d-flex align-items-center gap-5 gap-md-0 mb-3'>
-        <div className="col-lg-8">
+      <div className='d-flex flex-column gap-3 gap-md-0 flex-md-row align-items-center mb-3'>
+        <div className="col-12 col-md-8">
           <div className="d-flex align-items-center gap-3">
             <h5 className="mb-0"><a href='/dashboard'><img src="/left-arrow-black.svg"/></a> EMPLOYEE</h5>
             <button
@@ -79,7 +79,7 @@ const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessa
             </button>
           </div>
         </div>
-        <div className='col-lg-4'>
+        <div className='col-12 col-md-4'>
           <input
             type="text"
             className="form-control"
