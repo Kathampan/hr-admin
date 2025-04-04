@@ -124,7 +124,7 @@ console.log("Updated Projects List:", updatedProjects);
         <div className='d-flex align-items-center gap-5 gap-md-0'>
           <div className="col-lg-8 mb-3">
             <div className="d-flex align-items-center gap-3">
-              <h5 className="mb-0">Projects</h5>
+              <h5 className="mb-0"> <a href='/dashboard'><img src="/left-arrow-black.svg"/></a> Projects</h5>
               <button className="btn btn-black" data-bs-toggle="modal" data-bs-target="#addProject">Add</button>
             </div>
           </div>

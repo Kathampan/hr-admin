@@ -6,8 +6,8 @@ import '../scss/components/DashboardCards.scss'
 
 const cards = [
   { title: "Projects", link: "/projects" },
-  { title: "Employee's", link: "/employees" },
-  { title: "Status", link: "/status" },
+  { title: "Employee", link: "/employee" },
+  { title: "Work Status", link: "/work-status" },
 ];
 ---
 
@@ -29,9 +29,12 @@ const cards = [
     </div>
   </div>
 </header>
-  <div class="container  mt-4 shadow-5 rounded-3 p-3 custom-header">
+  <div class="container  mt-4  p-3 ">
     <div class="row">
-      <div class="dashboard-grid d-flex justify-content-center">
+      
+      <div class="dashboard-grid d-flex justify-content-center text-center">
+       
+       
         <DashboardCards cards={cards} client:load />
      
       </div>

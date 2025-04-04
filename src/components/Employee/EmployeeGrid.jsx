@@ -70,7 +70,7 @@ const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessa
       <div className='d-flex align-items-center gap-5 gap-md-0 mb-3'>
         <div className="col-lg-8">
           <div className="d-flex align-items-center gap-3">
-            <h5 className="mb-0">EMPLOYEE</h5>
+            <h5 className="mb-0"><a href='/dashboard'><img src="/left-arrow-black.svg"/></a> EMPLOYEE</h5>
             <button
               className="btn btn-black"
               onClick={onAddEmployee}

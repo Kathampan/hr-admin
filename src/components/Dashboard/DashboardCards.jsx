@@ -11,17 +11,21 @@ const DashboardCards = ({ cards }) => {
   return (
    
 
-      <div className="d-flex align-items-center gap-5 justify-content-center">
-        {cards.map((card, idx) => (
-          <div
-            key={idx}
-            className="box fade-in"
-            onClick={() => (window.location.href = card.link)}
-          >
-            <h3>{card.title}</h3>
-          </div>
-        ))}
-      </div>
+    <div className="container py-5 text-center">
+    <h1 className="mb-4 fw-bold">Dashboard</h1>
+    <div className="d-flex flex-wrap justify-content-center gap-4 mt-5">
+      {cards.map((card, idx) => (
+        <div
+          key={idx} className="box fade-in"
+          
+          onClick={() => (window.location.href = card.link)}
+        >
+          <div className="icon">{card.icon}</div>
+          <h3>{card.title}</h3>
+        </div>
+      ))}
+    </div>
+  </div>
    
   );
 };
