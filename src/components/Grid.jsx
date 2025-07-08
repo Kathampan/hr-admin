@@ -1,17 +1,46 @@
 import React, { useState, useEffect, useRef } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-const DataTable = ({ data = [], columns = [] }) => {
+const DataTable = ({ columns = [] }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage] = useState(10); // Set to 10 rows per page
-  const [projects, setProjects] = useState(data);
+  const [rowsPerPage] = useState(10);
+  const [projects, setProjects] = useState([]);
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
   const [newProject, setNewProject] = useState({ project: '', projectInfo: '' });
   const [errors, setErrors] = useState({});
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const modalRef = useRef(null);
+
+  // Fetch projects from API on component mount
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await fetch('https://dasfab.online:8443/project', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        const data = await response.json();
+        // Map API response to match component's data structure
+        const mappedData = data.map(item => ({
+          id: item.id,
+          project: item.name,
+          projectInfo: item.info,
+          date: item.createdDate.split('T')[0],
+          isActive: true, // Assuming new projects are active by default
+        }));
+        setProjects(mappedData);
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+        showToastMessage('Failed to fetch projects');
+      }
+    };
+
+    fetchProjects();
+  }, []);
 
   const validateForm = () => {
     let formErrors = {};
@@ -21,28 +50,49 @@ const DataTable = ({ data = [], columns = [] }) => {
     return Object.keys(formErrors).length === 0;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!validateForm()) return;
-    const updatedProjects = [
-      ...projects,
-      { 
-        id: projects.length + 1, 
-        ...newProject, 
-        isActive: true,
-        date: new Date().toISOString().split('T')[0]
+
+    const payload = {
+      name: newProject.project,
+      info: newProject.projectInfo,
+      createdDate: new Date().toISOString(),
+    };
+
+    try {
+      const response = await fetch('https://dasfab.online:8443/project', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add project');
       }
-    ];
-    
-    setProjects(updatedProjects);
-    setNewProject({ project: '', projectInfo: '' });
-    console.log("New Project Details:", newProject);
-console.log("Updated Projects List:", updatedProjects);
-    setErrors({});
-    setCurrentPage(Math.ceil(updatedProjects.length / rowsPerPage));
-    showToastMessage(`"${newProject.project}" added successfully!`);
-    
-    const modal = bootstrap.Modal.getInstance(modalRef.current);
-    modal.hide();
+
+      const newProjectData = await response.json();
+      const updatedProject = {
+        id: newProjectData.id,
+        project: newProjectData.name,
+        projectInfo: newProjectData.info,
+        date: newProjectData.createdDate.split('T')[0],
+        isActive: true,
+      };
+
+      setProjects([...projects, updatedProject]);
+      setNewProject({ project: '', projectInfo: '' });
+      setErrors({});
+      setCurrentPage(Math.ceil((projects.length + 1) / rowsPerPage));
+      showToastMessage(`"${newProject.project}" added successfully!`);
+
+      const modal = bootstrap.Modal.getInstance(modalRef.current);
+      modal.hide();
+    } catch (error) {
+      console.error('Error adding project:', error);
+      showToastMessage('Failed to add project');
+    }
   };
 
   const requestSort = (key) => {
@@ -121,7 +171,7 @@ console.log("Updated Projects List:", updatedProjects);
   return (
     <div className="container mt-4">
       <div className="table-container">
-        <div className='d-flex flex-column  flex-md-row align-items-center '>
+        <div className='d-flex flex-column flex-md-row align-items-center'>
           <div className="col-12 col-md-8 mb-3">
             <div className="d-flex align-items-center gap-3">
               <h5 className="mb-0"> <a href='/dashboard'><img src="/left-arrow-black.svg"/></a> Projects</h5>
@@ -291,9 +341,7 @@ const Grid = () => {
     { key: 'action', label: 'Action', sortable: false }
   ];
 
-  const initialData = [];
-
-  return <DataTable data={initialData} columns={columns} />;
+  return <DataTable columns={columns} />;
 };
 
 export default Grid;

@@ -28,15 +28,62 @@ const Login = () => {
 
   const mockLoginAPI = () => {
     return new Promise((resolve) => {
-      setTimeout(() => {
-        if (formData.email === 'user@example.com' && formData.password === 'Password@123') {
-          resolve({ success: true, token: 'mock-token' });
-        } else {
-          resolve({ success: false, message: 'Invalid email or password' });
-        }
+      setTimeout(async () => {
+
+        
+         try {
+            const requestData = {
+              userName: formData.email,
+              password: formData.password,
+            };
+      
+            const result = await fetch("https://dasfab.online:8443/auth/login", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(requestData),
+            });
+      
+            console.log(result.ok)
+            if (result.ok) {
+              const responseData = await result.json();
+              console.log(responseData)
+              resolve({ success: true, token: responseData.token });
+            } else {
+              resolve({ success: false, message: 'Invalid email or password' });
+            }
+      
+            
+          } catch (error) {
+            console.error("Error:", error);
+            resolve({ success: false, message: 'Somthing went wrong..!!' });
+          }
       }, 1000);
     });
   };
+
+  /*async function login(requestData) {
+    try {
+      const result = await fetch("http://localhost:8080/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      });
+  
+      if (!result.ok) {
+        throw new Error(`HTTP error! Status: ${result.status}`);
+      }
+  
+      const data = await result.json();
+      return data;
+    } catch (error) {
+      console.error("Error:", error);
+      return null;
+    }
+  }*/
 
   const handleSubmit = async (e) => {
     e.preventDefault();

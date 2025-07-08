@@ -319,7 +319,7 @@ const EmployeeGrid = () => {
                       onClick={() => handleToggleStatus(employee.id)}
                     >
                       {employee.status === 'Active' ? 'Deactivate' : 'Activate'}
-                    </button>
+                    </button> 
                     <a
                       href={`/employee/${employee.id}`}
                       className="btn btn-sm btn-link text-decoration-none"

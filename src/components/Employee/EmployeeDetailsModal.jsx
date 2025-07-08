@@ -19,7 +19,6 @@ const EmployeeDetailsModal = ({ showDetailsModal, setShowDetailsModal, employee 
                 ></button>
               </div>
               <div className="modal-body p-4">
-                {/* Basic Information */}
                 {/* <div className="mb-4">
                   <h6 className="border-bottom pb-2">Basic Information</h6>
                   <div className="row g-3">
@@ -70,8 +69,7 @@ const EmployeeDetailsModal = ({ showDetailsModal, setShowDetailsModal, employee 
                   </div>
                 </div>
 
-                {/* Personal Information */}
-                {/* <div className="mb-4">
+                <div className="mb-4">
                   <h6 className="border-bottom pb-2">Personal Information</h6>
                   <div className="row g-3">
                     <div className="col-md-4">
@@ -135,10 +133,9 @@ const EmployeeDetailsModal = ({ showDetailsModal, setShowDetailsModal, employee 
                       <p>{employee.officialMobile || 'N/A'}</p>
                     </div>
                   </div>
-                </div> */}
+                </div>
 
-                {/* Present Address */}
-                {/* <div className="mb-4">
+                <div className="mb-4">
                   <h6 className="border-bottom pb-2">Present Address</h6>
                   <div className="row g-3">
                     <div className="col-md-4">
@@ -174,9 +171,8 @@ const EmployeeDetailsModal = ({ showDetailsModal, setShowDetailsModal, employee 
                       <p>{employee.phone2 || 'N/A'}</p>
                     </div>
                   </div>
-                </div> */} 
+                </div> */}
 
-                {/* Project Details */}
                 <div className="mb-4">
                   <h5 className="pb-2">Project Details</h5>
                   {employee.projects && employee.projects.length > 0 ? (

@@ -2,155 +2,81 @@ import { useState, useEffect } from 'react';
 import React from 'react';
 import EmployeeGrid from './EmployeeGrid';
 import AddEmployeeModal from './AddEmployeeModal';
-import EmployeeDetailsModal from './EmployeeDetailsModal'; // New modal for details
+import EmployeeDetailsModal from './EmployeeDetailsModal';
 
 const EmployeeManager = () => {
-  const [employees, setEmployees] = useState([
-    { 
-      id: 1, 
-      title: '', 
-      firstName: 'Bibs', 
-      middleName: '', 
-      lastName: 'ST', 
-      employeeId: '', 
-      aadhaarCard: '', 
-      gender: 'Male', 
-      mobile: '', 
-      personalEmail: '', 
-      officialEmail: '', 
-      pan: '', 
-      drivingLicense: '', 
-      address1: '', 
-      address2: '', 
-      address3: '', 
-      designation: 'Developer', 
-      fathersName: '', 
-      esiNo: '', 
-      ediDispensary: '', 
-      dob: '', 
-      placeOfBirth: '', 
-      age: '', 
-      maritalStatus: 'Single', 
-      children: '', 
-      city: '', 
-      state: '', 
-      pinCode: '', 
-      nationality: 'Indian', 
-      citizenship: 'Indian', 
-      spouseName: '', 
-      officialMobile: '', 
-      phone1: '', 
-      phone2: '', 
-      uan: '', 
-      status: 'Active', 
-      tracking: 'Tracking',
-      projects: [
-        { projectId: 101, projectName: 'E-Commerce Platform', role: 'Lead Developer', startDate: '2023-01-15', endDate: '2023-12-31', status: 'Completed' },
-        { projectId: 102, projectName: 'Inventory System', role: 'Developer', startDate: '2024-01-10', endDate: '2024-06-30', status: 'Ongoing' }
-      ]
-    },
-    { 
-      id: 2, 
-      title: '', 
-      firstName: 'Vishnu', 
-      middleName: '', 
-      lastName: 'KJ', 
-      employeeId: '', 
-      aadhaarCard: '', 
-      gender: 'Male', 
-      mobile: '', 
-      personalEmail: '', 
-      officialEmail: '', 
-      pan: '', 
-      drivingLicense: '', 
-      address1: '', 
-      address2: '', 
-      address3: '', 
-      designation: 'Manager', 
-      fathersName: '', 
-      esiNo: '', 
-      ediDispensary: '', 
-      dob: '', 
-      placeOfBirth: '', 
-      age: '', 
-      maritalStatus: 'Single', 
-      children: '', 
-      city: '', 
-      state: '', 
-      pinCode: '', 
-      nationality: 'Indian', 
-      citizenship: 'Indian', 
-      spouseName: '', 
-      officialMobile: '', 
-      phone1: '', 
-      phone2: '', 
-      uan: '', 
-      status: 'Active', 
-      tracking: 'Tracking',
-      projects: [
-        { projectId: 201, projectName: 'HR System', role: 'Project Manager', startDate: '2023-03-01', endDate: '2023-11-30', status: 'Completed' }
-      ]
-    },
-    { 
-      id: 3, 
-      title: '', 
-      firstName: 'Jithin', 
-      middleName: '', 
-      lastName: 'PP', 
-      employeeId: '', 
-      aadhaarCard: '', 
-      gender: 'Male', 
-      mobile: '', 
-      personalEmail: '', 
-      officialEmail: '', 
-      pan: '', 
-      drivingLicense: '', 
-      address1: '', 
-      address2: '', 
-      address3: '', 
-      designation: 'Designer', 
-      fathersName: '', 
-      esiNo: '', 
-      ediDispensary: '', 
-      dob: '', 
-      placeOfBirth: '', 
-      age: '', 
-      maritalStatus: 'Single', 
-      children: '', 
-      city: '', 
-      state: '', 
-      pinCode: '', 
-      nationality: 'Indian', 
-      citizenship: 'Indian', 
-      spouseName: '', 
-      officialMobile: '', 
-      phone1: '', 
-      phone2: '', 
-      uan: '', 
-      status: 'Inactive', 
-      tracking: 'Tracking',
-      projects: [
-        { projectId: 301, projectName: 'Website Redesign', role: 'UI/UX Designer', startDate: '2023-05-01', endDate: '2023-09-30', status: 'Completed' },
-        { projectId: 302, projectName: 'Mobile App Design', role: 'Designer', startDate: '2024-02-01', endDate: '2024-08-31', status: 'Ongoing' }
-      ]
-    },
-    // Add projects for the remaining employees...
-    { id: 4, title: '', firstName: 'Ask', middleName: '', lastName: 'ST', employeeId: '', aadhaarCard: '', gender: 'Male', mobile: '', personalEmail: '', officialEmail: '', pan: '', drivingLicense: '', address1: '', address2: '', address3: '', designation: 'Developer', fathersName: '', esiNo: '', ediDispensary: '', dob: '', placeOfBirth: '', age: '', maritalStatus: 'Single', children: '', city: '', state: '', pinCode: '', nationality: 'Indian', citizenship: 'Indian', spouseName: '', officialMobile: '', phone1: '', phone2: '', uan: '', status: 'Active', tracking: 'Tracking', projects: [] },
-    { id: 5, title: '', firstName: 'Test', middleName: '', lastName: 'KJ', employeeId: '', aadhaarCard: '', gender: 'Male', mobile: '', personalEmail: '', officialEmail: '', pan: '', drivingLicense: '', address1: '', address2: '', address3: '', designation: 'Manager', fathersName: '', esiNo: '', ediDispensary: '', dob: '', placeOfBirth: '', age: '', maritalStatus: 'Single', children: '', city: '', state: '', pinCode: '', nationality: 'Indian', citizenship: 'Indian', spouseName: '', officialMobile: '', phone1: '', phone2: '', uan: '', status: 'Inactive', tracking: 'Tracking', projects: [] },
-    { id: 6, title: '', firstName: 'Test', middleName: '', lastName: 'PP', employeeId: '', aadhaarCard: '', gender: 'Male', mobile: '', personalEmail: '', officialEmail: '', pan: '', drivingLicense: '', address1: '', address2: '', address3: '', designation: 'Designer', fathersName: '', esiNo: '', ediDispensary: '', dob: '', placeOfBirth: '', age: '', maritalStatus: 'Single', children: '', city: '', state: '', pinCode: '', nationality: 'Indian', citizenship: 'Indian', spouseName: '', officialMobile: '', phone1: '', phone2: '', uan: '', status: 'Active', tracking: 'Tracking', projects: [] },
-    { id: 7, title: '', firstName: 'Ask', middleName: '', lastName: 'ST', employeeId: '', aadhaarCard: '', gender: 'Male', mobile: '', personalEmail: '', officialEmail: '', pan: '', drivingLicense: '', address1: '', address2: '', address3: '', designation: 'Developer', fathersName: '', esiNo: '', ediDispensary: '', dob: '', placeOfBirth: '', age: '', maritalStatus: 'Single', children: '', city: '', state: '', pinCode: '', nationality: 'Indian', citizenship: 'Indian', spouseName: '', officialMobile: '', phone1: '', phone2: '', uan: '', status: 'Active', tracking: 'Tracking', projects: [] },
-    { id: 8, title: '', firstName: 'Test', middleName: '', lastName: 'KJ', employeeId: '', aadhaarCard: '', gender: 'Male', mobile: '', personalEmail: '', officialEmail: '', pan: '', drivingLicense: '', address1: '', address2: '', address3: '', designation: 'Manager', fathersName: '', esiNo: '', ediDispensary: '', dob: '', placeOfBirth: '', age: '', maritalStatus: 'Single', children: '', city: '', state: '', pinCode: '', nationality: 'Indian', citizenship: 'Indian', spouseName: '', officialMobile: '', phone1: '', phone2: '', uan: '', status: 'Active', tracking: 'Tracking', projects: [] },
-    { id: 9, title: '', firstName: 'Test', middleName: '', lastName: 'PP', employeeId: '', aadhaarCard: '', gender: 'Male', mobile: '', personalEmail: '', officialEmail: '', pan: '', drivingLicense: '', address1: '', address2: '', address3: '', designation: 'Designer', fathersName: '', esiNo: '', ediDispensary: '', dob: '', placeOfBirth: '', age: '', maritalStatus: 'Single', children: '', city: '', state: '', pinCode: '', nationality: 'Indian', citizenship: 'Indian', spouseName: '', officialMobile: '', phone1: '', phone2: '', uan: '', status: 'Active', tracking: 'Tracking', projects: [] },
-    { id: 10, title: '', firstName: 'Ask', middleName: '', lastName: 'ST', employeeId: '', aadhaarCard: '', gender: 'Male', mobile: '', personalEmail: '', officialEmail: '', pan: '', drivingLicense: '', address1: '', address2: '', address3: '', designation: 'Developer', fathersName: '', esiNo: '', ediDispensary: '', dob: '', placeOfBirth: '', age: '', maritalStatus: 'Single', children: '', city: '', state: '', pinCode: '', nationality: 'Indian', citizenship: 'Indian', spouseName: '', officialMobile: '', phone1: '', phone2: '', uan: '', status: 'Active', tracking: 'Tracking', projects: [] },
-    { id: 11, title: '', firstName: 'Test', middleName: '', lastName: 'KJ', employeeId: '', aadhaarCard: '', gender: 'Male', mobile: '', personalEmail: '', officialEmail: '', pan: '', drivingLicense: '', address1: '', address2: '', address3: '', designation: 'Manager', fathersName: '', esiNo: '', ediDispensary: '', dob: '', placeOfBirth: '', age: '', maritalStatus: 'Single', children: '', city: '', state: '', pinCode: '', nationality: 'Indian', citizenship: 'Indian', spouseName: '', officialMobile: '', phone1: '', phone2: '', uan: '', status: 'Active', tracking: 'Tracking', projects: [] },
-    { id: 12, title: '', firstName: 'Test', middleName: '', lastName: 'PP', employeeId: '', aadhaarCard: '', gender: 'Male', mobile: '', personalEmail: '', officialEmail: '', pan: '', drivingLicense: '', address1: '', address2: '', address3: '', designation: 'Designer', fathersName: '', esiNo: '', ediDispensary: '', dob: '', placeOfBirth: '', age: '', maritalStatus: 'Single', children: '', city: '', state: '', pinCode: '', nationality: 'Indian', citizenship: 'Indian', spouseName: '', officialMobile: '', phone1: '', phone2: '', uan: '', status: 'Active', tracking: 'Tracking', projects: [] }
-  ]);
+  const [employees, setEmployees] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showDetailsModal, setShowDetailsModal] = useState(false); // State for details modal
-  const [selectedEmployee, setSelectedEmployee] = useState(null); // State for selected employee to view
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
+
+  // Fetch employees from API
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const response = await fetch('https://dasfab.online:8443/employee', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch employees');
+        }
+        const data = await response.json();
+        // Map API data to component's flat structure
+        const mappedData = data.map(item => ({
+          id: item.id,
+          title: item.personalInfo.title || '',
+          firstName: item.personalInfo.firstName || '',
+          middleName: item.personalInfo.middleName || '',
+          lastName: item.personalInfo.lastName || '',
+          employeeId: item.employmentInfo.employeeId || '',
+          aadhaarCard: item.personalInfo.aadhaar || '',
+          gender: item.personalInfo.gender || 'Male',
+          mobile: item.contactInfo.phone1 ? String(item.contactInfo.phone1) : '',
+          personalEmail: item.contactInfo.personalEmail || '',
+          officialEmail: item.contactInfo.officeEmail || '',
+          pan: item.personalInfo.pan || '',
+          drivingLicense: item.personalInfo.drivingLicense || '',
+          address1: item.contactInfo.address.address1 || '',
+          address2: item.contactInfo.address.address2 || '',
+          address3: '',
+          designation: item.employmentInfo.designation || '',
+          fathersName: item.personalInfo.fatherName || '',
+          esiNo: item.employmentInfo.esiNumber || '',
+          ediDispensary: item.employmentInfo.esiDispensary || '',
+          dob: item.personalInfo.dob ? item.personalInfo.dob.split('T')[0] : '',
+          placeOfBirth: item.personalInfo.placeOfBirth || '',
+          age: '',
+          maritalStatus: item.personalInfo.maritalStatus || 'Single',
+          children: item.personalInfo.numOfChildren ? String(item.personalInfo.numOfChildren) : '',
+          city: item.contactInfo.address.city || '',
+          state: item.contactInfo.address.state || '',
+          pinCode: item.contactInfo.address.pin ? String(item.contactInfo.address.pin) : '',
+          nationality: item.personalInfo.nationality || 'Indian',
+          citizenship: item.personalInfo.citizenship || 'Indian',
+          spouseName: item.personalInfo.spouseName || '',
+          officialMobile: '',
+          phone1: item.contactInfo.phone1 ? String(item.contactInfo.phone1) : '',
+          phone2: item.contactInfo.phone2 ? String(item.contactInfo.phone2) : '',
+          uan: '',
+          status: 'Active',
+          tracking: 'Tracking',
+          projects: item.projects || [],
+        }));
+        setEmployees(mappedData);
+      } catch (error) {
+        console.error('Error fetching employees:', error);
+        showToastMessage('Failed to fetch employees');
+      }
+    };
+
+    fetchEmployees();
+  }, []);
 
   const showToastMessage = (message) => {
     setToastMessage(message);
@@ -168,8 +94,8 @@ const EmployeeManager = () => {
   };
 
   const handleViewDetails = (employee) => {
-    setSelectedEmployee(employee); // Set the selected employee for the details modal
-    setShowDetailsModal(true); // Open the details modal
+    setSelectedEmployee(employee);
+    setShowDetailsModal(true);
   };
 
   useEffect(() => {
@@ -182,7 +108,7 @@ const EmployeeManager = () => {
   }, [showToast]);
 
   return (
-    <div>
+    <div className='employee-grid'>
       <EmployeeGrid
         setShowAddModal={setShowAddModal}
         employees={employees}
@@ -190,7 +116,7 @@ const EmployeeManager = () => {
         showToastMessage={showToastMessage}
         onEditEmployee={handleEditEmployee}
         onAddEmployee={handleAddEmployee}
-        onViewDetails={handleViewDetails} // Pass the view details handler
+        onViewDetails={handleViewDetails}
       />
       <AddEmployeeModal
         showAddModal={showAddModal}
@@ -232,7 +158,9 @@ const EmployeeManager = () => {
         </div>
       )}
     </div>
+    
   );
+  
 };
 
 export default EmployeeManager;

@@ -18,7 +18,6 @@ const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessa
 
   const requestSort = (key) => {
     if (!columns.find(col => col.key === key)?.sortable) return;
-
     let direction = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
       direction = 'desc';
@@ -51,13 +50,83 @@ const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessa
   const totalPages = Math.ceil(filteredData.length / rowsPerPage);
   const currentPageData = filteredData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
-  const handleToggleStatus = (id) => {
-    setEmployees(employees.map(employee =>
-      employee.id === id
-        ? { ...employee, status: employee.status === 'Active' ? 'Inactive' : 'Active' }
-        : employee
-    ));
-    showToastMessage('Status updated successfully');
+  const handleToggleStatus = async (id) => {
+    console.log('Toggling status for employee ID:', id); // Debug log
+    const employee = employees.find(emp => emp.id === id);
+    if (!employee) {
+      console.error('Employee not found with ID:', id);
+      return;
+    }
+
+    const updatedStatus = employee.status === 'Active' ? 'Inactive' : 'Active';
+    const payload = {
+      id: employee.id,
+      employmentInfo: {
+        employeeId: employee.employeeId || null,
+        designation: employee.designation || null,
+        esiNumber: employee.esiNo || null,
+        esiDispensary: employee.ediDispensary || null,
+      },
+      contactInfo: {
+        phone1: employee.phone1 ? parseInt(employee.phone1) : 0,
+        phone2: employee.phone2 ? parseInt(employee.phone2) : 0,
+        address: {
+          address1: employee.address1 || null,
+          address2: employee.address2 || null,
+          city: employee.city || null,
+          state: employee.state || null,
+          pin: employee.pinCode ? parseInt(employee.pinCode) : null,
+        },
+        personalEmail: employee.personalEmail || null,
+        officeEmail: employee.officialEmail || null,
+      },
+      personalInfo: {
+        title: employee.title || null,
+        firstName: employee.firstName || null,
+        middleName: employee.middleName || null,
+        lastName: employee.lastName || null,
+        aadhaar: employee.aadhaarCard || null,
+        pan: employee.pan || null,
+        drivingLicense: employee.drivingLicense || null,
+        gender: employee.gender || null,
+        fatherName: employee.fathersName || null,
+        dob: employee.dob ? new Date(employee.dob).toISOString() : null,
+        placeOfBirth: employee.placeOfBirth || null,
+        maritalStatus: employee.maritalStatus || null,
+        numOfChildren: employee.children ? parseInt(employee.children) : null,
+        nationality: employee.nationality || null,
+        citizenship: employee.citizenship || null,
+        spouseName: employee.spouseName || null,
+      },
+      createdDate: employee.createdDate || new Date().toISOString(),
+      status: updatedStatus,
+      projects: employee.projects || [],
+    };
+
+    try {
+      console.log('Sending PATCH request with payload:', payload); // Debug log
+      const response = await fetch(`https://dasfab.online:8443/employee/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          // 'Authorization': `Bearer ${localStorage.getItem('token')}`, // Uncomment if needed
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to update employee status: ${errorText}`);
+      }
+
+      setEmployees(employees.map(emp =>
+        emp.id === id ? { ...emp, status: updatedStatus } : emp
+      ));
+      showToastMessage('Status updated successfully');
+    } catch (error) {
+      console.error('Error updating employee status:', error.message); // Debug log
+      showToastMessage('Failed to update employee status');
+    }
   };
 
   const getSortIcon = (key) => {
@@ -66,17 +135,15 @@ const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessa
   };
 
   return (
-    <div className="container mt-4 employee-grid" style={{ display: 'flex', flexDirection: 'column', }}>
+    <div className="container mt-4" style={{ display: 'flex', flexDirection: 'column' }}>
       <div className='d-flex flex-column gap-3 gap-md-0 flex-md-row align-items-center mb-3'>
         <div className="col-12 col-md-8">
           <div className="d-flex align-items-center gap-3">
-            <h5 className="mb-0"><a href='/dashboard'><img src="/left-arrow-black.svg"/></a> EMPLOYEE</h5>
-            <button
-              className="btn btn-black"
-              onClick={onAddEmployee}
-            >
-              Add
-            </button>
+            <h5 className="mb-0"><a href='/dashboard'><img src="/left-arrow-black.svg" alt="Back" /></a> EMPLOYEE</h5>
+            <button className="btn btn-black" onClick={() => {
+              console.log('Add button clicked'); // Debug log
+              onAddEmployee();
+            }}>Add</button>
           </div>
         </div>
         <div className='col-12 col-md-4'>
@@ -118,6 +185,7 @@ const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessa
                     className="text-decoration-none"
                     onClick={(e) => {
                       e.preventDefault();
+                      console.log('Edit employee:', employee); // Debug log
                       onEditEmployee(employee);
                     }}
                   >
@@ -136,7 +204,10 @@ const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessa
                     </button>
                     <button
                       className="btn btn-sm btn-link text-decoration-none"
-                      onClick={() => onViewDetails(employee)} // Use the new handler
+                      onClick={() => {
+                        console.log('View details for employee:', employee); // Debug log
+                        onViewDetails(employee);
+                      }}
                     >
                       <FaExternalLinkAlt /> View Projects
                     </button>
