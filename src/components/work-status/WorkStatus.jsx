@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const WorkStatus = () => {
@@ -44,7 +44,7 @@ const WorkStatus = () => {
             postedDate: '2025-06-28',
         },
         {
-            id: 1,
+            id: 4,
             name: 'Website Redesign',
             time: '40 hours',
             description: 'Redesign company website with modern UI',
@@ -52,7 +52,7 @@ const WorkStatus = () => {
             postedDate: '2025-07-01',
         },
         {
-            id: 2,
+            id: 5,
             name: 'Mobile App Development',
             time: '60 hours',
             description: 'Develop iOS and Android app',
@@ -60,7 +60,7 @@ const WorkStatus = () => {
             postedDate: '2025-07-05',
         },
         {
-            id: 3,
+            id: 6,
             name: 'Database Optimization',
             time: '25 hours',
             description: 'Optimize SQL database performance',
@@ -70,23 +70,32 @@ const WorkStatus = () => {
     ];
 
     const projectOptions = ['Website Redesign', 'Mobile App Development', 'Database Optimization'];
-    const employeeOptions = ['John Doe', 'Jane Smith', 'Bob Johnson'];
+
+    const projectEmployeeMap = {
+        'Website Redesign': ['John Doe', 'Jane Smith'],
+        'Mobile App Development': ['Jane Smith', 'Bob Johnson'],
+        'Database Optimization': ['John Doe', 'Bob Johnson'],
+        '': ['John Doe', 'Jane Smith', 'Bob Johnson']
+    };
+
     const hoursOptions = Array.from({ length: 24 }, (_, i) => i);
     const minutesOptions = ['00', '15', '30', '45'];
 
-    // Get current date in YYYY-MM-DD format for max attribute
     const today = new Date().toISOString().split('T')[0];
 
     const handleShowModal = () => {
         setShowModal(true);
+        setFormData({ date: '', project: '', employee: '', hours: '', minutes: '', status: '' });
+        setFormErrors({});
     };
 
     const handleCloseModal = () => {
         setShowModal(false);
         setFormData({ date: '', project: '', employee: '', hours: '', minutes: '', status: '' });
         setFormErrors({});
-        // Clear any residual modal styles
         document.body.classList.remove('modal-open');
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) backdrop.remove();
         document.body.style.overflow = '';
         document.body.style.paddingRight = '';
     };
@@ -130,19 +139,27 @@ const WorkStatus = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+        if (name === 'project') {
+            setFormData({ ...formData, project: value, employee: '' });
+        } else {
+            setFormData({ ...formData, [name]: value });
+        }
         if (formErrors[name]) {
             setFormErrors({ ...formErrors, [name]: '' });
         }
     };
 
     const filteredProjects = projects.filter(project =>
-        project.name.toLowerCase().includes(searchTerm.toLowerCase())
+        project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        project.time.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        project.eodDate.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        project.postedDate.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
+    const indexOfFirstItem = (currentPage - 1) * itemsPerPage;
     const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentProjects = filteredProjects.slice(indexOfFirstItem, indexOfLastItem);
 
     const handlePageChange = (pageNumber) => {
@@ -151,10 +168,32 @@ const WorkStatus = () => {
         }
     };
 
+    const handleSearchChange = (e) => {
+        setSearchTerm(e.target.value);
+        setCurrentPage(1);
+    };
+
     const pageNumbers = [];
     for (let i = 1; i <= totalPages; i++) {
         pageNumbers.push(i);
     }
+
+    const employeeOptions = projectEmployeeMap[formData.project] || projectEmployeeMap[''];
+
+    // Add backdrop when modal is shown
+    useEffect(() => {
+        if (showModal) {
+            document.body.classList.add('modal-open');
+            const backdrop = document.createElement('div');
+            backdrop.className = 'modal-backdrop fade show';
+            document.body.appendChild(backdrop);
+        }
+        return () => {
+            document.body.classList.remove('modal-open');
+            const backdrop = document.querySelector('.modal-backdrop');
+            if (backdrop) backdrop.remove();
+        };
+    }, [showModal]);
 
     return (
         <div className="container mt-4 shadow-5 rounded-3 p-3">
@@ -181,10 +220,7 @@ const WorkStatus = () => {
                                     className="form-control mb-3 bg-white"
                                     placeholder="Search projects..."
                                     value={searchTerm}
-                                    onChange={(e) => {
-                                        setSearchTerm(e.target.value);
-                                        setCurrentPage(1);
-                                    }}
+                                    onChange={handleSearchChange}
                                 />
                             </div>
                         </div>
@@ -279,7 +315,6 @@ const WorkStatus = () => {
                                         type="button"
                                         className="btn-close"
                                         onClick={handleCloseModal}
-                                        data-bs-dismiss="modal"
                                         aria-label="Close"
                                     ></button>
                                 </div>
@@ -345,51 +380,51 @@ const WorkStatus = () => {
                                             <div className="invalid-feedback">{formErrors.employee}</div>
                                         )}
                                     </div>
-                                    <div className='row'>
-                                    <div className="mb-3 col-6">
-                                        <label className="form-label">
-                                            Hours Spent <span className="text-danger">*</span>
-                                        </label>
-                                        <select
-                                            className={`form-select ${formErrors.hours ? 'is-invalid' : ''}`}
-                                            name="hours"
-                                            value={formData.hours}
-                                            onChange={handleInputChange}
-                                            required
-                                        >
-                                            <option value="">Select Hours</option>
-                                            {hoursOptions.map((hour, index) => (
-                                                <option key={index} value={hour}>
-                                                    {hour}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        {formErrors.hours && (
-                                            <div className="invalid-feedback">{formErrors.hours}</div>
-                                        )}
-                                    </div>
-                                    <div className="mb-3 col-6">
-                                        <label className="form-label">
-                                            Minutes Spent <span className="text-danger">*</span>
-                                        </label>
-                                        <select
-                                            className={`form-select ${formErrors.minutes ? 'is-invalid' : ''}`}
-                                            name="minutes"
-                                            value={formData.minutes}
-                                            onChange={handleInputChange}
-                                            required
-                                        >
-                                            <option value="">Select Minutes</option>
-                                            {minutesOptions.map((minute, index) => (
-                                                <option key={index} value={minute}>
-                                                    {minute}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        {formErrors.minutes && (
-                                            <div className="invalid-feedback">{formErrors.minutes}</div>
-                                        )}
-                                    </div>
+                                    <div className="row">
+                                        <div className="mb-3 col-6">
+                                            <label className="form-label">
+                                                Hours Spent <span className="text-danger">*</span>
+                                            </label>
+                                            <select
+                                                className={`form-select ${formErrors.hours ? 'is-invalid' : ''}`}
+                                                name="hours"
+                                                value={formData.hours}
+                                                onChange={handleInputChange}
+                                                required
+                                            >
+                                                <option value="">Select Hours</option>
+                                                {hoursOptions.map((hour, index) => (
+                                                    <option key={index} value={hour}>
+                                                        {hour}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            {formErrors.hours && (
+                                                <div className="invalid-feedback">{formErrors.hours}</div>
+                                            )}
+                                        </div>
+                                        <div className="mb-3 col-6">
+                                            <label className="form-label">
+                                                Minutes Spent <span className="text-danger">*</span>
+                                            </label>
+                                            <select
+                                                className={`form-select ${formErrors.minutes ? 'is-invalid' : ''}`}
+                                                name="minutes"
+                                                value={formData.minutes}
+                                                onChange={handleInputChange}
+                                                required
+                                            >
+                                                <option value="">Select Minutes</option>
+                                                {minutesOptions.map((minute, index) => (
+                                                    <option key={index} value={minute}>
+                                                        {minute}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            {formErrors.minutes && (
+                                                <div className="invalid-feedback">{formErrors.minutes}</div>
+                                            )}
+                                        </div>
                                     </div>
                                     <div className="mb-3">
                                         <label className="form-label">
@@ -490,7 +525,7 @@ const WorkStatus = () => {
             }
             .page-item.active .page-link {
               background-color: #000;
-             // border-color: #000;
+              border-color: #000;
               color: #fff;
             }
             .page-link {
