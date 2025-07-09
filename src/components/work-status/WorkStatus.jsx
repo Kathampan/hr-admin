@@ -5,9 +5,19 @@ const WorkStatus = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 5; // Number of projects per page
+    const [formData, setFormData] = useState({
+        date: '',
+        project: '',
+        employee: '',
+        hours: '',
+        minutes: '',
+        status: ''
+    });
+    const [formErrors, setFormErrors] = useState({});
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
+    const itemsPerPage = 5;
 
-    // Sample data for the table
     const projects = [
         {
             id: 1,
@@ -59,40 +69,88 @@ const WorkStatus = () => {
         },
     ];
 
-    // Sample data for dropdowns
     const projectOptions = ['Website Redesign', 'Mobile App Development', 'Database Optimization'];
     const employeeOptions = ['John Doe', 'Jane Smith', 'Bob Johnson'];
     const hoursOptions = Array.from({ length: 24 }, (_, i) => i);
     const minutesOptions = ['00', '15', '30', '45'];
 
-    // Handle modal toggle
-    const handleShowModal = () => setShowModal(true);
-    const handleCloseModal = () => setShowModal(false);
+    // Get current date in YYYY-MM-DD format for max attribute
+    const today = new Date().toISOString().split('T')[0];
 
-    // Filter projects based on search term
+    const handleShowModal = () => {
+        setShowModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setFormData({ date: '', project: '', employee: '', hours: '', minutes: '', status: '' });
+        setFormErrors({});
+        // Clear any residual modal styles
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+    };
+
+    const validateForm = () => {
+        const errors = {};
+        
+        if (!formData.date) {
+            errors.date = 'Date is required';
+        } else if (new Date(formData.date) > new Date()) {
+            errors.date = 'Date cannot be in the future';
+        }
+        if (!formData.project) {
+            errors.project = 'Project is required';
+        }
+        if (!formData.employee) {
+            errors.employee = 'Employee is required';
+        }
+        if (!formData.hours && formData.hours !== '0') {
+            errors.hours = 'Hours is required';
+        }
+        if (!formData.minutes) {
+            errors.minutes = 'Minutes is required';
+        }
+        if (!formData.status.trim()) {
+            errors.status = 'Status is required';
+        }
+
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
+    const handleSave = () => {
+        if (validateForm()) {
+            setToastMessage('Work status added successfully!');
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 3000);
+            handleCloseModal();
+        }
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+        if (formErrors[name]) {
+            setFormErrors({ ...formErrors, [name]: '' });
+        }
+    };
+
     const filteredProjects = projects.filter(project =>
-        project.name.toLowerCase().includes(searchTerm.toLowerCase()) 
-        //||
-        // project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        // project.time.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        // project.eodDate.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        // project.postedDate.toLowerCase().includes(searchTerm.toLowerCase())
+        project.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Calculate pagination variables
     const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentProjects = filteredProjects.slice(indexOfFirstItem, indexOfLastItem);
 
-    // Handle page change
     const handlePageChange = (pageNumber) => {
         if (pageNumber >= 1 && pageNumber <= totalPages) {
             setCurrentPage(pageNumber);
         }
     };
 
-    // Generate page numbers for pagination
     const pageNumbers = [];
     for (let i = 1; i <= totalPages; i++) {
         pageNumbers.push(i);
@@ -107,13 +165,11 @@ const WorkStatus = () => {
                             <div className="col-12 col-md-8 mb-3">
                                 <div className="d-flex align-items-center gap-3">
                                     <h5 className="mb-0">
-                                        <a href="/dashboard"><img src="/left-arrow-black.svg" alt="Back" /></a> WorkStatus
+                                        <a href="/dashboard"><img src="/left-arrow-black.svg" alt="Back" /></a> Work Status
                                     </h5>
                                     <button
                                         className="btn btn-black"
                                         onClick={handleShowModal}
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#addWorkStatus"
                                     >
                                         Add
                                     </button>
@@ -127,7 +183,7 @@ const WorkStatus = () => {
                                     value={searchTerm}
                                     onChange={(e) => {
                                         setSearchTerm(e.target.value);
-                                        setCurrentPage(1); // Reset to first page on search
+                                        setCurrentPage(1);
                                     }}
                                 />
                             </div>
@@ -205,7 +261,6 @@ const WorkStatus = () => {
                         </div>
                     </div>
 
-                    {/* Modal for Adding status */}
                     <div
                         className={`modal fade ${showModal ? 'show' : ''}`}
                         style={{ display: showModal ? 'block' : 'none' }}
@@ -224,6 +279,7 @@ const WorkStatus = () => {
                                         type="button"
                                         className="btn-close"
                                         onClick={handleCloseModal}
+                                        data-bs-dismiss="modal"
                                         aria-label="Close"
                                     ></button>
                                 </div>
@@ -234,15 +290,28 @@ const WorkStatus = () => {
                                         </label>
                                         <input
                                             type="date"
-                                            className="form-control"
+                                            className={`form-control ${formErrors.date ? 'is-invalid' : ''}`}
+                                            name="date"
+                                            value={formData.date}
+                                            onChange={handleInputChange}
+                                            max={today}
                                             required
                                         />
+                                        {formErrors.date && (
+                                            <div className="invalid-feedback">{formErrors.date}</div>
+                                        )}
                                     </div>
                                     <div className="mb-3">
                                         <label className="form-label">
                                             Project <span className="text-danger">*</span>
                                         </label>
-                                        <select className="form-select" required>
+                                        <select
+                                            className={`form-select ${formErrors.project ? 'is-invalid' : ''}`}
+                                            name="project"
+                                            value={formData.project}
+                                            onChange={handleInputChange}
+                                            required
+                                        >
                                             <option value="">Select Project</option>
                                             {projectOptions.map((project, index) => (
                                                 <option key={index} value={project}>
@@ -250,12 +319,21 @@ const WorkStatus = () => {
                                                 </option>
                                             ))}
                                         </select>
+                                        {formErrors.project && (
+                                            <div className="invalid-feedback">{formErrors.project}</div>
+                                        )}
                                     </div>
                                     <div className="mb-3">
                                         <label className="form-label">
                                             Employee <span className="text-danger">*</span>
                                         </label>
-                                        <select className="form-select" required>
+                                        <select
+                                            className={`form-select ${formErrors.employee ? 'is-invalid' : ''}`}
+                                            name="employee"
+                                            value={formData.employee}
+                                            onChange={handleInputChange}
+                                            required
+                                        >
                                             <option value="">Select Employee</option>
                                             {employeeOptions.map((employee, index) => (
                                                 <option key={index} value={employee}>
@@ -263,12 +341,22 @@ const WorkStatus = () => {
                                                 </option>
                                             ))}
                                         </select>
+                                        {formErrors.employee && (
+                                            <div className="invalid-feedback">{formErrors.employee}</div>
+                                        )}
                                     </div>
-                                    <div className="mb-3">
+                                    <div className='row'>
+                                    <div className="mb-3 col-6">
                                         <label className="form-label">
                                             Hours Spent <span className="text-danger">*</span>
                                         </label>
-                                        <select className="form-select" required>
+                                        <select
+                                            className={`form-select ${formErrors.hours ? 'is-invalid' : ''}`}
+                                            name="hours"
+                                            value={formData.hours}
+                                            onChange={handleInputChange}
+                                            required
+                                        >
                                             <option value="">Select Hours</option>
                                             {hoursOptions.map((hour, index) => (
                                                 <option key={index} value={hour}>
@@ -276,12 +364,21 @@ const WorkStatus = () => {
                                                 </option>
                                             ))}
                                         </select>
+                                        {formErrors.hours && (
+                                            <div className="invalid-feedback">{formErrors.hours}</div>
+                                        )}
                                     </div>
-                                    <div className="mb-3">
+                                    <div className="mb-3 col-6">
                                         <label className="form-label">
                                             Minutes Spent <span className="text-danger">*</span>
                                         </label>
-                                        <select className="form-select" required>
+                                        <select
+                                            className={`form-select ${formErrors.minutes ? 'is-invalid' : ''}`}
+                                            name="minutes"
+                                            value={formData.minutes}
+                                            onChange={handleInputChange}
+                                            required
+                                        >
                                             <option value="">Select Minutes</option>
                                             {minutesOptions.map((minute, index) => (
                                                 <option key={index} value={minute}>
@@ -289,17 +386,27 @@ const WorkStatus = () => {
                                                 </option>
                                             ))}
                                         </select>
+                                        {formErrors.minutes && (
+                                            <div className="invalid-feedback">{formErrors.minutes}</div>
+                                        )}
+                                    </div>
                                     </div>
                                     <div className="mb-3">
                                         <label className="form-label">
                                             Status <span className="text-danger">*</span>
                                         </label>
                                         <textarea
-                                            className="form-control"
+                                            className={`form-control ${formErrors.status ? 'is-invalid' : ''}`}
+                                            name="status"
+                                            value={formData.status}
+                                            onChange={handleInputChange}
                                             rows="4"
                                             placeholder="Enter status details..."
                                             required
                                         ></textarea>
+                                        {formErrors.status && (
+                                            <div className="invalid-feedback">{formErrors.status}</div>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="modal-footer">
@@ -311,11 +418,10 @@ const WorkStatus = () => {
                                     >
                                         Discard
                                     </button>
-                                    <button 
-                                        type="button" 
-                                        className="btn btn-black" 
-                                        onClick={handleCloseModal}
-                                        data-bs-dismiss="modal"
+                                    <button
+                                        type="button"
+                                        className="btn btn-black"
+                                        onClick={handleSave}
                                     >
                                         Save
                                     </button>
@@ -323,7 +429,31 @@ const WorkStatus = () => {
                             </div>
                         </div>
                     </div>
-                    {showModal && <div className="modal-backdrop fade show"></div>}
+                    <div
+                        className={`toast align-items-center text-white bg-success border-0 ${showToast ? 'show' : ''}`}
+                        role="alert"
+                        aria-live="assertive"
+                        aria-atomic="true"
+                        style={{
+                            position: 'fixed',
+                            top: '20px',
+                            right: '20px',
+                            zIndex: 9999,
+                            transition: 'all 0.5s ease-in-out',
+                            opacity: showToast ? 1 : 0,
+                            transform: showToast ? 'translateY(0)' : 'translateY(-100%)',
+                            padding: '10px 10px',
+                        }}
+                    >
+                        <div className="d-flex">
+                            <div className="toast-body">{toastMessage}</div>
+                            <button
+                                type="button"
+                                className="btn-close btn-close-white me-2 m-auto"
+                                onClick={() => setShowToast(false)}
+                            ></button>
+                        </div>
+                    </div>
                 </div>
 
                 <style>
@@ -360,7 +490,7 @@ const WorkStatus = () => {
             }
             .page-item.active .page-link {
               background-color: #000;
-              border-color: #000;
+             // border-color: #000;
               color: #fff;
             }
             .page-link {
@@ -369,6 +499,15 @@ const WorkStatus = () => {
             .page-link:hover {
               color: #000;
               background-color: #e9ecef;
+            }
+            .is-invalid {
+              border-color: #dc3545 !important;
+            }
+            .invalid-feedback {
+              display: block;
+              color: #dc3545;
+              font-size: 0.875rem;
+              margin-top: 0.25rem;
             }
           `}
                 </style>
