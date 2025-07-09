@@ -11,34 +11,50 @@ const DataTable = ({ columns = [] }) => {
   const [newProject, setNewProject] = useState({ project: '', projectInfo: '' });
   const [errors, setErrors] = useState({});
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+  const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
   const modalRef = useRef(null);
+  const searchInputRef = useRef(null);
 
-  // Fetch projects from API on component mount
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const response = await fetch('https://dasfab.online:8443/project', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        const data = await response.json();
-        // Map API response to match component's data structure
-        const mappedData = data.map(item => ({
-          id: item.id,
-          project: item.name,
-          projectInfo: item.info,
-          date: item.createdDate.split('T')[0],
-          isActive: true, // Assuming new projects are active by default
-        }));
-        setProjects(mappedData);
-      } catch (error) {
-        console.error('Error fetching projects:', error);
-        showToastMessage('Failed to fetch projects');
+  // Fetch projects from API
+  const fetchProjects = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('https://dasfab.online:8443/project', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
-    };
+      const data = await response.json();
+      console.log('API Response:', data);
+      if (!Array.isArray(data)) {
+        throw new Error('API response is not an array');
+      }
+      const mappedData = data.map(item => ({
+        id: item.id,
+        project: item.name || '',
+        projectInfo: item.info || '',
+        date: item.createdDate ? item.createdDate.split('T')[0] : '',
+        isActive: true,
+      }));
+      console.log('Mapped Data:', mappedData);
+      setProjects(mappedData);
+      setFetchError(null);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+      setFetchError(error.message);
+      showToastMessage('Failed to fetch projects');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  // Fetch projects on mount
+  useEffect(() => {
     fetchProjects();
   }, []);
 
@@ -50,7 +66,8 @@ const DataTable = ({ columns = [] }) => {
     return Object.keys(formErrors).length === 0;
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e) => {
+    e.preventDefault();
     if (!validateForm()) return;
 
     const payload = {
@@ -73,22 +90,38 @@ const DataTable = ({ columns = [] }) => {
       }
 
       const newProjectData = await response.json();
-      const updatedProject = {
-        id: newProjectData.id,
-        project: newProjectData.name,
-        projectInfo: newProjectData.info,
-        date: newProjectData.createdDate.split('T')[0],
-        isActive: true,
-      };
-
-      setProjects([...projects, updatedProject]);
+      console.log('POST Response:', newProjectData); // Debug log
+      await fetchProjects(); // Refetch projects to sync with server
       setNewProject({ project: '', projectInfo: '' });
       setErrors({});
-      setCurrentPage(Math.ceil((projects.length + 1) / rowsPerPage));
+      setSearchTerm('');
+      if (searchInputRef.current) {
+        searchInputRef.current.value = '';
+      }
+      setCurrentPage(1); // Reset to first page to show new project
       showToastMessage(`"${newProject.project}" added successfully!`);
 
-      const modal = bootstrap.Modal.getInstance(modalRef.current);
-      modal.hide();
+      // Close modal and remove backdrop
+      try {
+        const modalElement = modalRef.current;
+        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+        if (modalInstance) {
+          modalInstance.hide();
+          console.log('Modal hidden successfully');
+        } else {
+          console.warn('No modal instance found');
+        }
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+          backdrop.remove();
+          console.log('Backdrop manually removed');
+        }
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('overflow');
+        document.body.style.removeProperty('padding-right');
+      } catch (modalError) {
+        console.error('Error closing modal:', modalError);
+      }
     } catch (error) {
       console.error('Error adding project:', error);
       showToastMessage('Failed to add project');
@@ -97,7 +130,6 @@ const DataTable = ({ columns = [] }) => {
 
   const requestSort = (key) => {
     if (!columns.find(col => col.key === key)?.sortable) return;
-    
     let direction = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
       direction = 'desc';
@@ -109,24 +141,30 @@ const DataTable = ({ columns = [] }) => {
     let sortableData = [...projects];
     if (sortConfig.key) {
       sortableData.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
-          return sortConfig.direction === 'asc' ? -1 : 1;
-        }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
-          return sortConfig.direction === 'asc' ? 1 : -1;
-        }
+        const aValue = (a[sortConfig.key] || '').toString().toLowerCase();
+        const bValue = (b[sortConfig.key] || '').toString().toLowerCase();
+        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
         return 0;
       });
     }
     return sortableData;
   }, [projects, sortConfig]);
 
-  const filteredData = sortedData.filter(row =>
-    columns.some(column => row[column.key]?.toString().toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredData = React.useMemo(() => {
+    const result = sortedData.filter(row =>
+      columns.some(column => {
+        const value = (row[column.key] || '').toString().toLowerCase().trim();
+        return value.includes(searchTerm.toLowerCase().trim());
+      })
+    );
+    console.log('Filtered Data:', result, 'Search Term:', searchTerm);
+    return result;
+  }, [sortedData, searchTerm]);
 
   const totalPages = Math.ceil(filteredData.length / rowsPerPage);
   const currentPageData = filteredData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+  console.log('Current Page Data:', currentPageData);
 
   const handleToggle = id => {
     setProjects(prevProjects =>
@@ -179,48 +217,79 @@ const DataTable = ({ columns = [] }) => {
             </div>
           </div>
           <div className='col-12 col-md-4'>
-            <input type="text" className="form-control mb-3" placeholder="Search..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+            <input
+              type="text"
+              className="form-control mb-3"
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              ref={searchInputRef}
+            />
           </div>
         </div>
 
         <div className="table-responsive">
-          <table className="table table-bordered bg-white">
-            <thead>
-              <tr>
-                {columns.map(column => (
-                  <th 
-                    key={column.key}
-                    className={column.sortable ? 'sortable-header' : ''}
-                    onClick={() => requestSort(column.key)}
-                    style={{ cursor: column.sortable ? 'pointer' : 'default' }}
-                  >
-                    <div className="d-flex align-items-center justify-content-between">
-                      {column.label}
-                      {column.sortable && getSortIcon(column.key)}
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {currentPageData.map(row => (
-                <tr key={row.id}>
+          {isLoading ? (
+            <div className="text-center py-4">
+              <div className="spinner-border" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+            </div>
+          ) : fetchError ? (
+            <div className="alert alert-danger" role="alert">
+              Failed to load projects: {fetchError}
+            </div>
+          ) : filteredData.length === 0 ? (
+            <div className="alert alert-info" role="alert">
+              No projects found. {searchTerm ? 'Try clearing the search term.' : 'Add a new project.'}
+            </div>
+          ) : (
+            <table className="table table-bordered bg-white">
+              <thead>
+                <tr>
                   {columns.map(column => (
-                    <td key={column.key}>
-                      {column.key === 'action' ? (
-                        <>
-                          <button className={`btn btn-${row.isActive ? 'success' : 'warning'} btn-sm me-2`} onClick={() => handleToggle(row.id)}>
-                            {row.isActive ? 'Disable' : 'Enable'}
-                          </button>
-                          <button className="btn btn-secondary btn-sm" onClick={() => handleArchive(row.id)}>Archive</button>
-                        </>
-                      ) : column.key === 'date' ? new Date(row[column.key]).toLocaleDateString() : row[column.key]}
-                    </td>
+                    <th
+                      key={column.key}
+                      className={column.sortable ? 'sortable-header' : ''}
+                      onClick={() => requestSort(column.key)}
+                      style={{ cursor: column.sortable ? 'pointer' : 'default' }}
+                    >
+                      <div className="d-flex align-items-center justify-content-between">
+                        {column.label}
+                        {column.sortable && getSortIcon(column.key)}
+                      </div>
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {currentPageData.map(row => (
+                  <tr key={row.id}>
+                    {columns.map(column => (
+                      <td key={column.key}>
+                        {column.key === 'action' ? (
+                          <>
+                            <button
+                              className={`btn btn-${row.isActive ? 'success' : 'warning'} btn-sm me-2`}
+                              onClick={() => handleToggle(row.id)}
+                            >
+                              {row.isActive ? 'Disable' : 'Enable'}
+                            </button>
+                            <button
+                              className="btn btn-secondary btn-sm"
+                              onClick={() => handleArchive(row.id)}
+                            >
+                              Archive
+                            </button>
+                          </>
+                        ) : column.key === 'date' ? new Date(row[column.key]).toLocaleDateString() : row[column.key]}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
 
         {filteredData.length > rowsPerPage && (
@@ -228,15 +297,35 @@ const DataTable = ({ columns = [] }) => {
             <nav>
               <ul className="pagination justify-content-center mb-0">
                 <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                  <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1}>Prev</button>
+                  <button
+                    className="page-link"
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    Prev
+                  </button>
                 </li>
                 {[...Array(totalPages)].map((_, index) => (
-                  <li key={index} className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}>
-                    <button className="page-link" onClick={() => setCurrentPage(index + 1)}>{index + 1}</button>
+                  <li
+                    key={index}
+                    className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => setCurrentPage(index + 1)}
+                    >
+                      {index + 1}
+                    </button>
                   </li>
                 ))}
                 <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                  <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages}>Next</button>
+                  <button
+                    className="page-link"
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </button>
                 </li>
               </ul>
             </nav>
@@ -250,33 +339,66 @@ const DataTable = ({ columns = [] }) => {
           <div className="modal-content p-3">
             <div className="modal-header modal-custom-head">
               <h5 className="modal-title">Add Project</h5>
-              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
             </div>
             <div className="modal-body">
               <div className="mb-3">
-                <label className="form-label">Project Name <span className="text-danger">*</span></label>
-                <input type="text" className="form-control" value={newProject.project} onChange={e => setNewProject({ ...newProject, project: e.target.value })} />
+                <label className="form-label">
+                  Project Name <span className="text-danger">*</span>
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={newProject.project}
+                  onChange={e => setNewProject({ ...newProject, project: e.target.value })}
+                />
                 {errors.project && <small className="text-danger">{errors.project}</small>}
               </div>
               <div className="mb-3">
-                <label className="form-label">Project Info <span className="text-danger">*</span></label>
-                <input type="text" className="form-control" value={newProject.projectInfo} onChange={e => setNewProject({ ...newProject, projectInfo: e.target.value })} />
-                {errors.projectInfo && <small className="text-danger">{errors.projectInfo}</small>}
+                <label className="form-label">
+                  Project Info <span className="text-danger">*</span>
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={newProject.projectInfo}
+                  onChange={e => setNewProject({ ...newProject, projectInfo: e.target.value })}
+                />
+                {errors.projectInfo && (
+                  <small className="text-danger">{errors.projectInfo}</small>
+                )}
               </div>
             </div>
             <div className="modal-footer">
-              <button type="button" className="btn btn-cancel" data-bs-dismiss="modal">Close</button>
-              <button type="button" className="btn btn-black" onClick={handleSave}>Save</button>
+              <button
+                type="button"
+                className="btn btn-cancel"
+                data-bs-dismiss="modal"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                className="btn btn-black"
+                onClick={handleSave}
+              >
+                Save
+              </button>
             </div>
           </div>
         </div>
       </div>
 
       {/* Animated Toast Notification */}
-      <div 
-        className={`toast align-items-center text-white bg-success border-0 ${showToast ? 'show' : ''}`} 
-        role="alert" 
-        aria-live="assertive" 
+      <div
+        className={`toast align-items-center text-white bg-success border-0 ${showToast ? 'show' : ''}`}
+        role="alert"
+        aria-live="assertive"
         aria-atomic="true"
         style={{
           position: 'fixed',
@@ -285,16 +407,14 @@ const DataTable = ({ columns = [] }) => {
           zIndex: 9999,
           transition: 'all 0.5s ease-in-out',
           opacity: showToast ? 1 : 0,
-          transform: showToast ? 'translateY(0)' : 'translateY(-100%)'
+          transform: showToast ? 'translateY(0)' : 'translateY(-100%)',
         }}
       >
         <div className="d-flex">
-          <div className="toast-body">
-            {toastMessage}
-          </div>
-          <button 
-            type="button" 
-            className="btn-close btn-close-white me-2 m-auto" 
+          <div className="toast-body">{toastMessage}</div>
+          <button
+            type="button"
+            className="btn-close btn-close-white me-2 m-auto"
             onClick={() => setShowToast(false)}
           ></button>
         </div>
@@ -338,7 +458,7 @@ const Grid = () => {
     { key: 'project', label: 'Project', sortable: true },
     { key: 'projectInfo', label: 'Project Info', sortable: false },
     { key: 'date', label: 'Date', sortable: true },
-    { key: 'action', label: 'Action', sortable: false }
+    { key: 'action', label: 'Action', sortable: false },
   ];
 
   return <DataTable columns={columns} />;

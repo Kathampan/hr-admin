@@ -26,6 +26,7 @@ const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessa
   };
 
   const sortedData = React.useMemo(() => {
+    console.log('Sorting employees:', employees); // Debug log
     let sortableData = [...employees];
     if (sortConfig.key) {
       sortableData.sort((a, b) => {
@@ -41,17 +42,21 @@ const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessa
     return sortableData;
   }, [employees, sortConfig]);
 
-  const filteredData = sortedData.filter(employee =>
-    columns.some(column =>
-      employee[column.key]?.toString().toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
+  const filteredData = React.useMemo(() => {
+    console.log('Filtering with searchTerm:', searchTerm, 'and sortedData:', sortedData); // Debug log
+    return sortedData.filter(employee =>
+      columns.some(column => {
+        const value = employee[column.key]?.toString().toLowerCase() || '';
+        return value.includes(searchTerm.toLowerCase());
+      })
+    );
+  }, [sortedData, searchTerm, columns]);
 
   const totalPages = Math.ceil(filteredData.length / rowsPerPage);
   const currentPageData = filteredData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
   const handleToggleStatus = async (id) => {
-    console.log('Toggling status for employee ID:', id); // Debug log
+    console.log('Toggling status for employee ID:', id);
     const employee = employees.find(emp => emp.id === id);
     if (!employee) {
       console.error('Employee not found with ID:', id);
@@ -104,12 +109,11 @@ const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessa
     };
 
     try {
-      console.log('Sending PATCH request with payload:', payload); // Debug log
+      console.log('Sending PATCH request with payload:', payload);
       const response = await fetch(`https://dasfab.online:8443/employee/${id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          // 'Authorization': `Bearer ${localStorage.getItem('token')}`, // Uncomment if needed
         },
         body: JSON.stringify(payload),
       });
@@ -124,7 +128,7 @@ const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessa
       ));
       showToastMessage('Status updated successfully');
     } catch (error) {
-      console.error('Error updating employee status:', error.message); // Debug log
+      console.error('Error updating employee status:', error.message);
       showToastMessage('Failed to update employee status');
     }
   };
@@ -134,6 +138,11 @@ const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessa
     return sortConfig.direction === 'asc' ? <span className="ms-2">↑</span> : <span className="ms-2">↓</span>;
   };
 
+  const handleAfterAdd = () => {
+    setSearchTerm(''); // Reset search term to show all employees
+    setCurrentPage(1); // Reset to first page
+  };
+
   return (
     <div className="container mt-4" style={{ display: 'flex', flexDirection: 'column' }}>
       <div className='d-flex flex-column gap-3 gap-md-0 flex-md-row align-items-center mb-3'>
@@ -141,8 +150,9 @@ const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessa
           <div className="d-flex align-items-center gap-3">
             <h5 className="mb-0"><a href='/dashboard'><img src="/left-arrow-black.svg" alt="Back" /></a> EMPLOYEE</h5>
             <button className="btn btn-black" onClick={() => {
-              console.log('Add button clicked'); // Debug log
+              console.log('Add button clicked');
               onAddEmployee();
+              handleAfterAdd(); // Reset search after add
             }}>Add</button>
           </div>
         </div>
@@ -152,7 +162,10 @@ const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessa
             className="form-control"
             placeholder="Search..."
             value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
+            onChange={e => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1); // Reset to first page on new search
+            }}
           />
         </div>
       </div>
@@ -177,44 +190,52 @@ const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessa
             </tr>
           </thead>
           <tbody>
-            {currentPageData.map(employee => (
-              <tr key={employee.id}>
-                <td>
-                  <a
-                    href="#"
-                    className="text-decoration-none"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      console.log('Edit employee:', employee); // Debug log
-                      onEditEmployee(employee);
-                    }}
-                  >
-                    {employee.firstName}
-                  </a>
-                </td>
-                <td>{employee.lastName}</td>
-                <td>{employee.designation}</td>
-                <td>
-                  <div className="d-flex gap-2">
-                    <button
-                      className={`btn btn-sm employee-stat ${employee.status === 'Active' ? 'btn-warning' : 'btn-success'}`}
-                      onClick={() => handleToggleStatus(employee.id)}
-                    >
-                      {employee.status === 'Active' ? 'Deactivate' : 'Activate'}
-                    </button>
-                    <button
-                      className="btn btn-sm btn-link text-decoration-none"
-                      onClick={() => {
-                        console.log('View details for employee:', employee); // Debug log
-                        onViewDetails(employee);
+            {currentPageData.length > 0 ? (
+              currentPageData.map(employee => (
+                <tr key={employee.id}>
+                  <td>
+                    <a
+                      href="#"
+                      className="text-decoration-none"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        console.log('Edit employee:', employee);
+                        onEditEmployee(employee);
                       }}
                     >
-                      <FaExternalLinkAlt /> View Projects
-                    </button>
-                  </div>
+                      {employee.firstName || 'N/A'}
+                    </a>
+                  </td>
+                  <td>{employee.lastName || 'N/A'}</td>
+                  <td>{employee.designation || 'N/A'}</td>
+                  <td>
+                    <div className="d-flex gap-2">
+                      <button
+                        className={`btn btn-sm employee-stat ${employee.status === 'Active' ? 'btn-warning' : 'btn-success'}`}
+                        onClick={() => handleToggleStatus(employee.id)}
+                      >
+                        {employee.status === 'Active' ? 'Deactivate' : 'Activate'}
+                      </button>
+                      <button
+                        className="btn btn-sm btn-link text-decoration-none"
+                        onClick={() => {
+                          console.log('View details for employee:', employee);
+                          onViewDetails(employee);
+                        }}
+                      >
+                        <FaExternalLinkAlt /> View Projects
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={columns.length} className="text-center">
+                  {employees.length === 0 ? 'No employees fetched' : 'No employees found'}
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
