@@ -4,9 +4,35 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 const WorkStatus = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [showModal, setShowModal] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5; // Number of projects per page
 
     // Sample data for the table
     const projects = [
+        {
+            id: 1,
+            name: 'Website Redesign',
+            time: '40 hours',
+            description: 'Redesign company website with modern UI',
+            eodDate: '2025-08-15',
+            postedDate: '2025-07-01',
+        },
+        {
+            id: 2,
+            name: 'Mobile App Development',
+            time: '60 hours',
+            description: 'Develop iOS and Android app',
+            eodDate: '2025-09-30',
+            postedDate: '2025-07-05',
+        },
+        {
+            id: 3,
+            name: 'Database Optimization',
+            time: '25 hours',
+            description: 'Optimize SQL database performance',
+            eodDate: '2025-07-20',
+            postedDate: '2025-06-28',
+        },
         {
             id: 1,
             name: 'Website Redesign',
@@ -43,8 +69,37 @@ const WorkStatus = () => {
     const handleShowModal = () => setShowModal(true);
     const handleCloseModal = () => setShowModal(false);
 
+    // Filter projects based on search term
+    const filteredProjects = projects.filter(project =>
+        project.name.toLowerCase().includes(searchTerm.toLowerCase()) 
+        //||
+        // project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        // project.time.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        // project.eodDate.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        // project.postedDate.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    // Calculate pagination variables
+    const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentProjects = filteredProjects.slice(indexOfFirstItem, indexOfLastItem);
+
+    // Handle page change
+    const handlePageChange = (pageNumber) => {
+        if (pageNumber >= 1 && pageNumber <= totalPages) {
+            setCurrentPage(pageNumber);
+        }
+    };
+
+    // Generate page numbers for pagination
+    const pageNumbers = [];
+    for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+    }
+
     return (
-        <div className="container mt-4 shadow rounded-3 p-3">
+        <div className="container mt-4 shadow-5 rounded-3 p-3">
             <div className="col-lg-12">
                 <div className="container mt-4">
                     <div className="table-container">
@@ -68,9 +123,12 @@ const WorkStatus = () => {
                                 <input
                                     type="text"
                                     className="form-control mb-3 bg-white"
-                                    placeholder="Search..."
+                                    placeholder="Search projects..."
                                     value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    onChange={(e) => {
+                                        setSearchTerm(e.target.value);
+                                        setCurrentPage(1); // Reset to first page on search
+                                    }}
                                 />
                             </div>
                         </div>
@@ -87,15 +145,23 @@ const WorkStatus = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {projects.map((project) => (
-                                        <tr key={project.id}>
-                                            <td>{project.name}</td>
-                                            <td>{project.time}</td>
-                                            <td>{project.description}</td>
-                                            <td>{project.eodDate}</td>
-                                            <td>{project.postedDate}</td>
+                                    {currentProjects.length > 0 ? (
+                                        currentProjects.map((project) => (
+                                            <tr key={project.id}>
+                                                <td>{project.name}</td>
+                                                <td>{project.time}</td>
+                                                <td>{project.description}</td>
+                                                <td>{project.eodDate}</td>
+                                                <td>{project.postedDate}</td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="5" className="text-center">
+                                                No projects found
+                                            </td>
                                         </tr>
-                                    ))}
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -103,14 +169,36 @@ const WorkStatus = () => {
                         <div className="pagination-container mt-3">
                             <nav>
                                 <ul className="pagination justify-content-center mb-0">
-                                    <li className="page-item">
-                                        <button className="page-link">Prev</button>
+                                    <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                                        <button 
+                                            className="page-link" 
+                                            onClick={() => handlePageChange(currentPage - 1)}
+                                            disabled={currentPage === 1}
+                                        >
+                                            Prev
+                                        </button>
                                     </li>
-                                    <li className="page-item">
-                                        <button className="page-link">1</button>
-                                    </li>
-                                    <li className="page-item">
-                                        <button className="page-link">Next</button>
+                                    {pageNumbers.map(number => (
+                                        <li 
+                                            key={number} 
+                                            className={`page-item ${currentPage === number ? 'active' : ''}`}
+                                        >
+                                            <button 
+                                                className="page-link" 
+                                                onClick={() => handlePageChange(number)}
+                                            >
+                                                {number}
+                                            </button>
+                                        </li>
+                                    ))}
+                                    <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                                        <button 
+                                            className="page-link" 
+                                            onClick={() => handlePageChange(currentPage + 1)}
+                                            disabled={currentPage === totalPages}
+                                        >
+                                            Next
+                                        </button>
                                     </li>
                                 </ul>
                             </nav>
@@ -135,7 +223,7 @@ const WorkStatus = () => {
                                     <button
                                         type="button"
                                         className="btn-close"
-                                        data-bs-dismiss="modal"
+                                        onClick={handleCloseModal}
                                         aria-label="Close"
                                     ></button>
                                 </div>
@@ -217,11 +305,18 @@ const WorkStatus = () => {
                                 <div className="modal-footer">
                                     <button
                                         type="button"
-                                        className="btn btn-secondary" data-bs-dismiss="modal"                                       
+                                        className="btn btn-secondary"
+                                        onClick={handleCloseModal}
+                                        data-bs-dismiss="modal"
                                     >
                                         Discard
                                     </button>
-                                    <button type="button" className="btn btn-black" data-bs-dismiss="modal">
+                                    <button 
+                                        type="button" 
+                                        className="btn btn-black" 
+                                        onClick={handleCloseModal}
+                                        data-bs-dismiss="modal"
+                                    >
                                         Save
                                     </button>
                                 </div>
@@ -262,6 +357,18 @@ const WorkStatus = () => {
             }
             .shadow {
               box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+            }
+            .page-item.active .page-link {
+              background-color: #000;
+              border-color: #000;
+              color: #fff;
+            }
+            .page-link {
+              color: #000;
+            }
+            .page-link:hover {
+              color: #000;
+              background-color: #e9ecef;
             }
           `}
                 </style>

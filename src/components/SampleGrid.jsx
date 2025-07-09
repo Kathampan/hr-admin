@@ -44,7 +44,7 @@ const SampleGrid = () => {
     const handleCloseModal = () => setShowModal(false);
 
     return (
-        <div className="container mt-4 shadow rounded-3 p-3">
+        <div className="container mt-4 shadow-5 rounded-3 p-3">
             <div className="col-lg-12">
                 <div className="container mt-4">
                     <div className="table-container">
