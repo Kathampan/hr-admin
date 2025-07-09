@@ -1,0 +1,26 @@
+---
+import Layout from "../layouts/Layout.astro";
+import "../scss/components/style.scss";
+import WorkStatus from '../components/work-status/WorkStatus.jsx';
+---
+
+<Layout title="Dashboard">
+  <script is:inline>
+    if (!localStorage.getItem("authToken")) {
+      window.location.href = "/login";
+    }
+  </script>
+  <header class="custom-header">
+    <div class="container-fluid mt-3">
+      <div class="row">
+        <div class="col-6">
+          <h3>DK Tekdesign Engineering</h3>
+        </div>
+        <div class="col-6">
+          <a href="/logout" class="btn btn-danger float-end">Logout</a>
+        </div>
+      </div>
+    </div>
+  </header>
+  <WorkStatus/>
+</Layout>
