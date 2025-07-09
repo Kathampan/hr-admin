@@ -38,10 +38,12 @@ const DataTable = ({ columns = [] }) => {
         id: item.id,
         project: item.name || '',
         projectInfo: item.info || '',
-        date: item.createdDate ? item.createdDate.split('T')[0] : '',
-        isActive: true,
+        date: item.createdDate || '',
+        inactive: item.inactive || false,
       }));
       console.log('Mapped Data:', mappedData);
+      // Sort by date descending to show newest first
+      mappedData.sort((a, b) => new Date(b.date) - new Date(a.date));
       setProjects(mappedData);
       setFetchError(null);
     } catch (error) {
@@ -74,6 +76,7 @@ const DataTable = ({ columns = [] }) => {
       name: newProject.project,
       info: newProject.projectInfo,
       createdDate: new Date().toISOString(),
+      inactive: false,
     };
 
     try {
@@ -90,7 +93,7 @@ const DataTable = ({ columns = [] }) => {
       }
 
       const newProjectData = await response.json();
-      console.log('POST Response:', newProjectData); // Debug log
+      console.log('POST Response:', newProjectData);
       await fetchProjects(); // Refetch projects to sync with server
       setNewProject({ project: '', projectInfo: '' });
       setErrors({});
@@ -125,6 +128,49 @@ const DataTable = ({ columns = [] }) => {
     } catch (error) {
       console.error('Error adding project:', error);
       showToastMessage('Failed to add project');
+    }
+  };
+
+  const handleToggle = async (id) => {
+    const project = projects.find(p => p.id === id);
+    if (!project) return;
+
+    const newInactiveState = !project.inactive;
+    const payload = {
+      id: project.id,
+      name: project.project,
+      info: project.projectInfo,
+      createdDate: project.date,
+      inactive: newInactiveState,
+    };
+
+    try {
+      const response = await fetch('https://dasfab.online:8443/project', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update project status');
+      }
+
+      setProjects(prevProjects =>
+        prevProjects.map(p => {
+          if (p.id === id) {
+            showToastMessage(
+              `Project "${p.project}" ${newInactiveState ? 'disabled' : 'enabled'}`
+            );
+            return { ...p, inactive: newInactiveState };
+          }
+          return p;
+        })
+      );
+    } catch (error) {
+      console.error('Error updating project:', error);
+      showToastMessage('Failed to update project status');
     }
   };
 
@@ -165,27 +211,6 @@ const DataTable = ({ columns = [] }) => {
   const totalPages = Math.ceil(filteredData.length / rowsPerPage);
   const currentPageData = filteredData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
   console.log('Current Page Data:', currentPageData);
-
-  const handleToggle = id => {
-    setProjects(prevProjects =>
-      prevProjects.map(project => {
-        if (project.id === id) {
-          showToastMessage(
-            `Project "${project.project}" ${!project.isActive ? 'enabled' : 'disabled'}`
-          );
-          return { ...project, isActive: !project.isActive };
-        }
-        return project;
-      })
-    );
-  };
-
-  const handleArchive = id => {
-    const project = projects.find(p => p.id === id);
-    if (project) {
-      showToastMessage(`"${project.project}" archived!`);
-    }
-  };
 
   const showToastMessage = message => {
     setToastMessage(message);
@@ -268,21 +293,13 @@ const DataTable = ({ columns = [] }) => {
                     {columns.map(column => (
                       <td key={column.key}>
                         {column.key === 'action' ? (
-                          <>
-                            <button
-                              className={`btn btn-${row.isActive ? 'success' : 'warning'} btn-sm me-2`}
-                              onClick={() => handleToggle(row.id)}
-                            >
-                              {row.isActive ? 'Disable' : 'Enable'}
-                            </button>
-                            <button
-                              className="btn btn-secondary btn-sm"
-                              onClick={() => handleArchive(row.id)}
-                            >
-                              Archive
-                            </button>
-                          </>
-                        ) : column.key === 'date' ? new Date(row[column.key]).toLocaleDateString() : row[column.key]}
+                          <button
+                            className={`btn btn-${row.inactive ? 'warning' : 'success'} btn-sm me-2`}
+                            onClick={() => handleToggle(row.id)}
+                          >
+                            {row.inactive ? 'Enable' : 'Disable'}
+                          </button>
+                        ) : column.key === 'date' ? new Date(row[column.key]).toLocaleString() : row[column.key]}
                       </td>
                     ))}
                   </tr>
@@ -394,7 +411,7 @@ const DataTable = ({ columns = [] }) => {
         </div>
       </div>
 
-      {/* Animated Toast Notification */}
+      {/* Toast Notification */}
       <div
         className={`toast align-items-center text-white bg-success border-0 ${showToast ? 'show' : ''}`}
         role="alert"
@@ -408,6 +425,7 @@ const DataTable = ({ columns = [] }) => {
           transition: 'all 0.5s ease-in-out',
           opacity: showToast ? 1 : 0,
           transform: showToast ? 'translateY(0)' : 'translateY(-100%)',
+          padding: '10px 10px', 
         }}
       >
         <div className="d-flex">
