@@ -5,9 +5,9 @@ import '../scss/components/style.scss'
 import '../scss/components/DashboardCards.scss'
 
 const cards = [
-  { title: "Projects", link: "/projects" },
-  { title: "Employee", link: "/employee-details" },
-  { title: "Work Status", link: "/work-status" },
+  { title: "Employee", link: "/employee" },
+  { title: "Leave", link: "/leave" },
+  { title: "Payslip", link: "/payslip" },
 ];
 ---
 
@@ -39,11 +39,11 @@ const cards = [
     <div class="row">
       
       <div class="dashboard-grid d-flex justify-content-center text-center">
-        <div class="container py-5 text-center">
-    <h1 class="mb-4 fw-bold">Dashboard</h1>
+       <div class="container py-5 text-center">
+    <h1 class="mb-4 fw-bold">Employee Details</h1>
        
         <DashboardCards cards={cards} client:load />
-     </div>
+     <div></div>
       </div>
     </div>
   </div>

@@ -189,7 +189,7 @@ const DataTable = ({ columns = [] }) => {
     };
 
     try {
-      const response = await fetch('https://dasfab.online:8443/project', {
+      const response = await fetch('https://dasfab.online:8563/project', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -236,18 +236,18 @@ const DataTable = ({ columns = [] }) => {
   };
 
   const sortedData = React.useMemo(() => {
-  let sortableData = [...projects];
-  if (sortConfig.key) {
-    sortableData.sort((a, b) => {
-      const aValue = (a[sortConfig.key] || '').toString().toLowerCase();
-      const bValue = (b[sortConfig.key] || '').toString().toLowerCase();
-      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1; 
-      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1; 
-      return 0;
-    });
-  }
-  return sortableData;
-}, [projects, sortConfig]);
+    let sortableData = [...projects];
+    if (sortConfig.key) {
+      sortableData.sort((a, b) => {
+        const aValue = (a[sortConfig.key] || '').toString().toLowerCase();
+        const bValue = (b[sortConfig.key] || '').toString().toLowerCase();
+        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    return sortableData;
+  }, [projects, sortConfig]);
 
   const filteredData = React.useMemo(() => {
     const result = sortedData.filter(row =>
@@ -349,7 +349,7 @@ const DataTable = ({ columns = [] }) => {
                               e.preventDefault();
                               handleEditClick(row);
                             }}
-                            style={{ textDecoration: 'underline', color: '#007bff' }}
+                            style={{ textDecoration: 'none', color: '#007bff' }}
                           >
                             {row.project}
                           </a>
@@ -431,7 +431,7 @@ const DataTable = ({ columns = [] }) => {
                 </label>
                 <input
                   type="text"
-                  className="form-control"
+                  className="form-control" maxLength={100}
                   value={newProject.project}
                   onChange={e => setNewProject({ ...newProject, project: e.target.value })}
                 />
@@ -443,7 +443,7 @@ const DataTable = ({ columns = [] }) => {
                 </label>
                 <input
                   type="text"
-                  className="form-control"
+                  className="form-control" maxLength={100}
                   value={newProject.projectInfo}
                   onChange={e => setNewProject({ ...newProject, projectInfo: e.target.value })}
                 />
@@ -492,7 +492,7 @@ const DataTable = ({ columns = [] }) => {
                 </label>
                 <input
                   type="text"
-                  className="form-control"
+                  className="form-control" maxLength={100}
                   value={editProject?.project || ''}
                   onChange={e => setEditProject({ ...editProject, project: e.target.value })}
                 />
@@ -504,7 +504,7 @@ const DataTable = ({ columns = [] }) => {
                 </label>
                 <input
                   type="text"
-                  className="form-control"
+                  className="form-control" maxLength={100}
                   value={editProject?.projectInfo || ''}
                   onChange={e => setEditProject({ ...editProject, projectInfo: e.target.value })}
                 />
@@ -587,7 +587,31 @@ const DataTable = ({ columns = [] }) => {
         }
         .table {
           margin-bottom: 0;
+          table-layout: fixed;
+          width: 100%;
         }
+        th[data-key='project'], td[data-key='project'] {
+          width: 500px;
+          max-width: 500px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          text-decoration: none;
+        }
+        th[data-key='projectInfo'], td[data-key='projectInfo'] {
+          width: 500px;
+          max-width: 500px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        th[data-key='date'], td[data-key='date'] {
+          width: 500px;
+        }
+        th[data-key='action'], td[data-key='action'] {
+          width: 500px;
+        }
+        
       `}</style>
     </div>
   );

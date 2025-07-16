@@ -11,8 +11,7 @@ const DashboardCards = ({ cards }) => {
   return (
    
 
-    <div className="container py-5 text-center">
-    <h1 className="mb-4 fw-bold">Dashboard</h1>
+   
     <div className="d-flex flex-wrap justify-content-center gap-4 mt-5">
       {cards.map((card, idx) => (
         <div
@@ -25,7 +24,6 @@ const DashboardCards = ({ cards }) => {
         </div>
       ))}
     </div>
-  </div>
    
   );
 };
