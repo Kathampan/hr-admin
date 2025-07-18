@@ -26,7 +26,7 @@ const EmployeeManager = () => {
           throw new Error('Failed to fetch employees');
         }
         const data = await response.json();
-        console.log('Fetched employee data from API:', data); // Debug log
+        console.log('Fetched employee data from API:', data);
         const mappedData = data.map(item => ({
           id: item.id,
           title: item.personalInfo?.title || '',
@@ -49,6 +49,7 @@ const EmployeeManager = () => {
           esiNo: item.employmentInfo?.esiNumber || '',
           ediDispensary: item.employmentInfo?.esiDispensary || '',
           dob: item.personalInfo?.dob ? item.personalInfo.dob.split('T')[0] : '',
+          doj: item.employmentInfo?.doj ? item.employmentInfo.doj.split('T')[0] : '', // Map doj
           placeOfBirth: item.personalInfo?.placeOfBirth || '',
           age: '',
           maritalStatus: item.personalInfo?.maritalStatus || 'Single',
@@ -67,7 +68,7 @@ const EmployeeManager = () => {
           tracking: 'Tracking',
           projects: item.projects || [],
         }));
-        console.log('Mapped employees state:', mappedData); // Debug log
+        console.log('Mapped employees state:', mappedData);
         setEmployees(mappedData);
       } catch (error) {
         console.error('Error fetching employees:', error);

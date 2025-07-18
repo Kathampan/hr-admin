@@ -9,7 +9,7 @@ const AddEmployeeModal = ({ showAddModal, setShowAddModal, setEmployees, employe
     lastName: '',
     employeeId: '',
     aadhaarCard: '',
-    gender: 'MALE', // Default to uppercase to match server enum
+    gender: 'MALE',
     mobile: '',
     personalEmail: '',
     officialEmail: '',
@@ -24,6 +24,7 @@ const AddEmployeeModal = ({ showAddModal, setShowAddModal, setEmployees, employe
     esiNo: '',
     ediDispensary: '',
     dob: '',
+    doj: '',
     placeOfBirth: '',
     age: '',
     maritalStatus: 'Single',
@@ -41,7 +42,7 @@ const AddEmployeeModal = ({ showAddModal, setShowAddModal, setEmployees, employe
     status: 'Active',
     tracking: 'Tracking',
     projects: [],
-    id: null, // Added to handle id in state
+    id: null,
     createdDate: null,
   };
 
@@ -52,20 +53,20 @@ const AddEmployeeModal = ({ showAddModal, setShowAddModal, setEmployees, employe
   useEffect(() => {
     if (showAddModal) {
       if (editingEmployee) {
-        console.log('Editing employee with data:', editingEmployee); // Debug log
+        console.log('Editing employee with data:', editingEmployee);
         setMode('edit');
-        // Transform gender to uppercase when editing and set id
         setNewEmployee({
           ...initialEmployeeState,
           ...editingEmployee,
           gender: editingEmployee.gender ? editingEmployee.gender.toUpperCase() : 'MALE',
-          id: editingEmployee.id || null, // Ensure id is set
+          id: editingEmployee.id || null,
           projects: editingEmployee.projects || [],
           createdDate: editingEmployee.createdDate || null,
-          status: editingEmployee.status || 'Active', // Map to status
+          status: editingEmployee.status || 'Active',
+          doj: editingEmployee.doj ? editingEmployee.doj.split('T')[0] : '',
         });
       } else {
-        console.log('Adding new employee'); // Debug log
+        console.log('Adding new employee');
         setMode('add');
         setNewEmployee(initialEmployeeState);
       }
@@ -90,6 +91,7 @@ const AddEmployeeModal = ({ showAddModal, setShowAddModal, setEmployees, employe
     if (!newEmployee.officialEmail?.trim()) newErrors.officialEmail = 'Official email is required';
     if (!newEmployee.address1?.trim()) newErrors.address1 = 'Address 1 is required';
     if (!newEmployee.dob?.trim()) newErrors.dob = 'Date of birth is required';
+    if (!newEmployee.doj?.trim()) newErrors.doj = 'Date of joining is required';
     if (!newEmployee.state?.trim()) newErrors.state = 'State is required';
     if (!newEmployee.fathersName?.trim()) newErrors.fathersName = "Father's name is required";
 
@@ -128,26 +130,27 @@ const AddEmployeeModal = ({ showAddModal, setShowAddModal, setEmployees, employe
     }
 
     setErrors(newErrors);
-    console.log('Validation errors:', newErrors); // Debug log
+    console.log('Validation errors:', newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Submitting form in mode:', mode, 'with data:', newEmployee); // Debug log
+    console.log('Submitting form in mode:', mode, 'with data:', newEmployee);
     if (!validateForm()) {
       showToastMessage('Please fix the validation errors before submitting.');
       return;
     }
 
     const payload = {
-      id: mode === 'edit' ? newEmployee.id : null, // Include id in body
+      id: mode === 'edit' ? newEmployee.id : null,
       projectIds: newEmployee.projects ? newEmployee.projects.map(p => p.projectId) : [],
       employmentInfo: {
         employeeId: newEmployee.employeeId || null,
         designation: newEmployee.designation || null,
         esiNumber: newEmployee.esiNo || null,
         esiDispensary: newEmployee.ediDispensary || null,
+        doj: newEmployee.doj ? new Date(newEmployee.doj).toISOString() : null,
       },
       contactInfo: {
         phone1: newEmployee.phone1 ? parseInt(newEmployee.phone1) : 0,
@@ -181,37 +184,36 @@ const AddEmployeeModal = ({ showAddModal, setShowAddModal, setEmployees, employe
         spouseName: newEmployee.spouseName || null,
       },
       createdDate: mode === 'add' ? new Date().toISOString() : (newEmployee.createdDate || new Date().toISOString()),
-      inactive: newEmployee.status === 'Inactive', // Map status to inactive
+      inactive: newEmployee.status === 'Inactive',
     };
 
     try {
-      const url = 'https://dasfab.online:8443/employee'; // Consistent endpoint
-      console.log('Sending request to:', url, 'with payload:', payload); // Debug log
+      const url = 'https://dasfab.online:8443/employee';
+      console.log('Sending request to:', url, 'with payload:', payload);
       const response = await fetch(url, {
         method: mode === 'add' ? 'POST' : 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          // 'Authorization': `Bearer ${localStorage.getItem('token')}`, // Uncomment if needed
         },
         body: JSON.stringify(payload),
       });
 
       const contentType = response.headers.get('Content-Type');
-      console.log('Response Content-Type:', contentType); // Debug log
+      console.log('Response Content-Type:', contentType);
       if (!response.ok) {
         const errorText = await response.text();
-        console.log('API error response:', errorText, 'Status:', response.status); // Debug log
+        console.log('API error response:', errorText, 'Status:', response.status);
         throw new Error(`Failed to ${mode === 'add' ? 'add' : 'update'} employee: ${errorText} (Status: ${response.status})`);
       }
 
       if (!contentType || !contentType.includes('application/json')) {
         const text = await response.text();
-        console.log('Non-JSON response received:', text); // Debug log
+        console.log('Non-JSON response received:', text);
         throw new Error(`Expected JSON response but received ${contentType || 'unknown content type'}: ${text.slice(0, 100)}...`);
       }
 
       const responseData = await response.json();
-      console.log('API response:', responseData); // Debug log
+      console.log('API response:', responseData);
 
       const mappedEmployee = {
         id: responseData.id || payload.id || Date.now(),
@@ -235,6 +237,7 @@ const AddEmployeeModal = ({ showAddModal, setShowAddModal, setEmployees, employe
         esiNo: responseData.employmentInfo?.esiNumber ?? payload.employmentInfo.esiNumber ?? newEmployee.esiNo ?? '',
         ediDispensary: responseData.employmentInfo?.esiDispensary ?? payload.employmentInfo.esiDispensary ?? newEmployee.ediDispensary ?? '',
         dob: responseData.personalInfo?.dob ? responseData.personalInfo.dob.split('T')[0] : newEmployee.dob ?? '',
+        doj: responseData.employmentInfo?.doj ? responseData.employmentInfo.doj.split('T')[0] : newEmployee.doj ?? '',
         placeOfBirth: responseData.personalInfo?.placeOfBirth ?? payload.personalInfo.placeOfBirth ?? newEmployee.placeOfBirth ?? '',
         age: newEmployee.age ?? '',
         maritalStatus: responseData.personalInfo?.maritalStatus ?? payload.personalInfo.maritalStatus ?? newEmployee.maritalStatus ?? 'Single',
@@ -249,17 +252,17 @@ const AddEmployeeModal = ({ showAddModal, setShowAddModal, setEmployees, employe
         phone1: responseData.contactInfo?.phone1 ? String(responseData.contactInfo.phone1) : newEmployee.phone1 ?? '',
         phone2: responseData.contactInfo?.phone2 ? String(responseData.contactInfo.phone2) : newEmployee.phone2 ?? '',
         uan: newEmployee.uan ?? '',
-        status: responseData.inactive ? 'Inactive' : 'Active', // Map inactive to status
+        status: responseData.inactive ? 'Inactive' : 'Active',
         tracking: responseData.tracking ?? newEmployee.tracking ?? 'Tracking',
         projects: responseData.projectIds ? responseData.projectIds.map(id => ({ projectId: id })) : payload.projects ?? newEmployee.projects ?? [],
       };
 
       if (mode === 'add') {
-        console.log('Adding employee to state:', mappedEmployee); // Debug log
-        setEmployees([...employees, mappedEmployee]);
+        console.log('Adding employee to state:', mappedEmployee);
+        setEmployees([mappedEmployee, ...employees]); // Place new employee at the start
         showToastMessage('Employee added successfully');
       } else {
-        console.log('Updating employee in state:', mappedEmployee); // Debug log
+        console.log('Updating employee in state:', mappedEmployee);
         setEmployees(employees.map(emp => emp.id === mappedEmployee.id ? mappedEmployee : emp));
         showToastMessage('Employee updated successfully');
       }
@@ -268,7 +271,7 @@ const AddEmployeeModal = ({ showAddModal, setShowAddModal, setEmployees, employe
       setMode('add');
       setShowAddModal(false);
     } catch (error) {
-      console.error(`Error ${mode === 'add' ? 'adding' : 'updating'} employee:`, error.message); // Debug log
+      console.error(`Error ${mode === 'add' ? 'adding' : 'updating'} employee:`, error.message);
       showToastMessage(`Failed to ${mode === 'add' ? 'add' : 'update'} employee: ${error.message}`);
     }
   };
@@ -421,6 +424,18 @@ const AddEmployeeModal = ({ showAddModal, setShowAddModal, setEmployees, employe
                         onChange={handleInputChange}
                       />
                     </div>
+                    <div className="col-md-4">
+                      <label className="form-label">Date of Joining <span className="text-danger">*</span></label>
+                      <input
+                        type="date"
+                        className={`form-control ${errors.doj ? 'is-invalid' : ''}`}
+                        name="doj"
+                        value={newEmployee.doj || ''}
+                        onChange={handleInputChange}
+                        disabled={mode === 'edit'}
+                      />
+                      {errors.doj && <div className="invalid-feedback">{errors.doj}</div>}
+                    </div>
                   </div>
                 </div>
 
@@ -466,8 +481,7 @@ const AddEmployeeModal = ({ showAddModal, setShowAddModal, setEmployees, employe
                         type="text"
                         className={`form-control ${errors.pan ? 'is-invalid' : ''}`}
                         name="pan"
-                        value={newEmployee.pan || ''
-                        }
+                        value={newEmployee.pan || ''}
                         onChange={handleInputChange}
                       />
                       {errors.pan && <div className="invalid-feedback">{errors.pan}</div>}
@@ -612,8 +626,7 @@ const AddEmployeeModal = ({ showAddModal, setShowAddModal, setEmployees, employe
                         type="text"
                         className="form-control"
                         name="address2"
-                        value={newEmployee.address2 || ''
-                        }
+                        value={newEmployee.address2 || ''}
                         onChange={handleInputChange}
                       />
                     </div>
@@ -633,8 +646,7 @@ const AddEmployeeModal = ({ showAddModal, setShowAddModal, setEmployees, employe
                         type="text"
                         className="form-control"
                         name="city"
-                        value={newEmployee.city || ''
-                        }
+                        value={newEmployee.city || ''}
                         onChange={handleInputChange}
                       />
                     </div>

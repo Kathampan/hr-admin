@@ -13,6 +13,7 @@ const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessa
     { key: 'firstName', label: 'First name', sortable: true },
     { key: 'lastName', label: 'Last name', sortable: true },
     { key: 'designation', label: 'Designation', sortable: true },
+    { key: 'doj', label: 'Date of Joining', sortable: true }, // Added doj column
     { key: 'action', label: 'Action', sortable: false }
   ];
 
@@ -26,7 +27,7 @@ const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessa
   };
 
   const sortedData = React.useMemo(() => {
-    console.log('Sorting employees:', employees); // Debug log
+    console.log('Sorting employees:', employees);
     let sortableData = [...employees];
     if (sortConfig.key) {
       sortableData.sort((a, b) => {
@@ -43,7 +44,7 @@ const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessa
   }, [employees, sortConfig]);
 
   const filteredData = React.useMemo(() => {
-    console.log('Filtering with searchTerm:', searchTerm, 'and sortedData:', sortedData); // Debug log
+    console.log('Filtering with searchTerm:', searchTerm, 'and sortedData:', sortedData);
     return sortedData.filter(employee =>
       columns.some(column => {
         const value = employee[column.key]?.toString().toLowerCase() || '';
@@ -71,6 +72,7 @@ const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessa
         designation: employee.designation || null,
         esiNumber: employee.esiNo || null,
         esiDispensary: employee.ediDispensary || null,
+        doj: employee.doj ? new Date(employee.doj).toISOString() : null, // Include doj
       },
       contactInfo: {
         phone1: employee.phone1 ? parseInt(employee.phone1) : 0,
@@ -139,8 +141,8 @@ const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessa
   };
 
   const handleAfterAdd = () => {
-    setSearchTerm(''); // Reset search term to show all employees
-    setCurrentPage(1); // Reset to first page
+    setSearchTerm('');
+    setCurrentPage(1);
   };
 
   return (
@@ -152,7 +154,7 @@ const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessa
             <button className="btn btn-black" onClick={() => {
               console.log('Add button clicked');
               onAddEmployee();
-              handleAfterAdd(); // Reset search after add
+              handleAfterAdd();
             }}>Add</button>
           </div>
         </div>
@@ -164,7 +166,7 @@ const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessa
             value={searchTerm}
             onChange={e => {
               setSearchTerm(e.target.value);
-              setCurrentPage(1); // Reset to first page on new search
+              setCurrentPage(1);
             }}
           />
         </div>
@@ -208,6 +210,7 @@ const EmployeeGrid = ({ setShowAddModal, employees, setEmployees, showToastMessa
                   </td>
                   <td>{employee.lastName || 'N/A'}</td>
                   <td>{employee.designation || 'N/A'}</td>
+                  <td>{employee.doj || 'N/A'}</td>
                   <td>
                     <div className="d-flex gap-2">
                       <button
